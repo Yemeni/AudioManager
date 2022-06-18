@@ -1,0 +1,11 @@
+namespace CarterGames.Assets.AudioManager
+{
+    public static class Tag
+    {
+        public const string Music = "Music";
+        public const string Music = "Music";
+        public const string Ambient = "Ambient";
+        public const string SFX = "SFX";
+        public const string Environment = "Environment";
+    }
+}

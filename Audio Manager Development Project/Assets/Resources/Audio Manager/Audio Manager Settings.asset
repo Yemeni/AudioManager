@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d24b714d880844feb2e4eec99c84d9e5, type: 3}
+  m_Name: Audio Manager Settings
+  m_EditorClassIdentifier: 
+  version: 3.0.0
+  releaseDate: TBA
+  audioPrefab: {fileID: 2444215560086890528, guid: 0f4b40a36dfa2b840b5a3e3c316a55b6,
+    type: 3}
+  clipAudioMixer: {fileID: 0}
+  musicPrefab: {fileID: 3230184475905882993, guid: adcd60910c258484cba5367e294b50d7,
+    type: 3}
+  musicAudioMixer: {fileID: 0}
+  showDebugMessages: 0
+  additionalMixerGroups: []
+  minVolumeVariance: -0.1
+  maxVolumeVariance: 0.1
+  minPitchVariance: -0.1
+  maxPitchVariance: 0.1
+  numberPerPageInEditor: 10
+  editorTabPosition: 0
+  showVariance: 0
+  showEditorOptions: 0
+  <CanPlayAudio>k__BackingField: 1
+  <CanPlayMusic>k__BackingField: 1

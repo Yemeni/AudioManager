@@ -1,0 +1,7 @@
+namespace CarterGames.Assets.AudioManager
+{
+    public static class Group
+    {
+        public static readonly string[] NewClipGroup = {"sci-fi_forcefield_hum_loop_03"};
+    }
+}
