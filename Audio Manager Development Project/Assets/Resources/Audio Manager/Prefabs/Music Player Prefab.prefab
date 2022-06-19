@@ -140,7 +140,7 @@ GameObject:
   m_Layer: 0
   m_Name: Music Player Prefab
   m_TagString: Untagged
-  m_Icon: {fileID: 2800000, guid: db88f7eae72ebc24a8e8c545bd58338d, type: 3}
+  m_Icon: {fileID: 2800000, guid: 57fff6a4798965e4d8cfe8283bb75993, type: 3}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1

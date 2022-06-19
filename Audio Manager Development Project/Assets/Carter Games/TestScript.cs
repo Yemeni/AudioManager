@@ -5,6 +5,7 @@ public class TestScript : MonoBehaviour
 {
     private void OnEnable()
     {
+    
         
         
         AudioManager.Play(Clip.Click_01);
