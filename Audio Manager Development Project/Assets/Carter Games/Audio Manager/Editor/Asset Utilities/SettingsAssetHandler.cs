@@ -1,8 +1,8 @@
 ﻿using UnityEditor;
 
-namespace CarterGames.Assets.AudioManager
+namespace CarterGames.Assets.AudioManager.Editor
 {
-    public class AmAssetHelper : AssetPostprocessor
+    public class SettingsAssetHandler : AssetPostprocessor
     {
         private static AudioManagerSettings settingsAsset;
 

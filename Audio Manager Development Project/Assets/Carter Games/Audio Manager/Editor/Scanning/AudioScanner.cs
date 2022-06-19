@@ -9,46 +9,9 @@ namespace CarterGames.Assets.AudioManager.Editor
 {
     public class AudioScanner : AssetPostprocessor
     {
-        private static bool _hasNewAudioClip;
-        private static AudioLibrary _library;
+        private static bool HasNewAudioClip;
+        private static AudioLibrary Library = AssetAccessor.GetAsset<AudioLibrary>();
         
-        
-        public static AudioLibrary Library
-        {
-            get
-            {
-                if (_library != null)
-                    return _library;
-
-                var asset = AssetDatabase.FindAssets("t:AudioLibrary", null);
-
-                if (asset.Length > 0)
-                {
-                    var path = AssetDatabase.GUIDToAssetPath(asset[0]);
-                    var loadedAsset = (AudioLibrary)AssetDatabase.LoadAssetAtPath(path, typeof(AudioLibrary));
-
-                    _library = loadedAsset;
-                    return _library;
-                }
-
-                AssetDatabase.CreateAsset(ScriptableObject.CreateInstance(typeof(AudioLibrary)), $"Assets/Resources/Audio Manager/Audio Library.asset");
-                AssetDatabase.Refresh();
-
-                asset = AssetDatabase.FindAssets("t:AudioLibrary", null);
-
-                if (asset.Length > 0)
-                {
-                    var path = AssetDatabase.GUIDToAssetPath(asset[0]);
-                    var loadedAsset = (AudioLibrary)AssetDatabase.LoadAssetAtPath(path, typeof(AudioLibrary));
-
-                    _library = loadedAsset;
-                    return _library;
-                }
-
-                Debug.LogError("Audio Manager | CG: No Audio Library Found In Project!");
-                return null;
-            }
-        }
         
         private static bool LibraryExists => Library != null;
         
@@ -57,8 +20,8 @@ namespace CarterGames.Assets.AudioManager.Editor
         [MenuItem("Tools/Audio Manager | CG/Perform Manual Scan")]
         public static void ManualScan()
         {
-            GetLibraryDictionary(Library).SetValue(Library, GetAllClipsInProject());
-            GetMixerGroups(Library).SetValue(Library, GetAllMixersInProject());
+            LibraryAssetHandler.SetDictionary(GetAllClipsInProject());
+            LibraryAssetHandler.SetMixerGroups(GetAllMixersInProject());
             EnumHandler.RefreshClips();
             EnumHandler.RefreshGroups();
             EnumHandler.RefreshMixers();
@@ -73,15 +36,15 @@ namespace CarterGames.Assets.AudioManager.Editor
             {
                 if (importedAssets.Any(t => t.Contains(".mixer")))
                 {
-                    GetMixerGroups(Library).SetValue(Library, GetAllMixersInProject());
+                    LibraryAssetHandler.SetMixerGroups(GetAllMixersInProject());
                     EnumHandler.RefreshMixers();
                 }
                 
-                if (!_hasNewAudioClip) return;
-                GetLibraryDictionary(Library).SetValue(Library, GetAllClipsInProject());
+                if (!HasNewAudioClip) return;
+                LibraryAssetHandler.SetDictionary(GetAllClipsInProject());
                 EnumHandler.RefreshClips();
                 EditorUtility.SetDirty(Library);
-                _hasNewAudioClip = false;
+                HasNewAudioClip = false;
             }
             else
             {
@@ -92,7 +55,7 @@ namespace CarterGames.Assets.AudioManager.Editor
 
         private void OnPostprocessAudio(AudioClip a)
         {
-            _hasNewAudioClip = true;
+            HasNewAudioClip = true;
         }
 
 
@@ -157,23 +120,9 @@ namespace CarterGames.Assets.AudioManager.Editor
             var clipRemovedName = removed.Split('/');
             var clipName = clipRemovedName[clipRemovedName.Length - 1].Split('.')[0];
             var newLib = Library.GetData.Where(t => !t.key.Equals(clipName)).ToArray();
-            
-            GetLibraryDictionary(Library).SetValue(Library, newLib);
+
+            LibraryAssetHandler.SetDictionary(newLib);
             EnumHandler.RefreshClips();
-        }
-
-
-        private static FieldInfo GetLibraryDictionary(AudioLibrary lib)
-        {
-            const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
-            return lib.GetType().GetField("library", flags);
-        }
-        
-        
-        private static FieldInfo GetMixerGroups(AudioLibrary lib)
-        {
-            const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
-            return lib.GetType().GetField("mixers", flags);
         }
     }
 }

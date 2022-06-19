@@ -5,7 +5,7 @@ using UnityEngine.Audio;
 
 namespace CarterGames.Assets.AudioManager
 {
-    public class AudioLibrary : ScriptableObject
+    public class AudioLibrary : AudioManagerAsset
     {
         [SerializeField] private int editorTabPos;
         [SerializeField] private AudioData[] library;

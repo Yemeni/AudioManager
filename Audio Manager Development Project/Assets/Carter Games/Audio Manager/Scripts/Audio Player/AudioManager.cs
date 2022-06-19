@@ -6,34 +6,12 @@ namespace CarterGames.Assets.AudioManager
 {
     public static class AudioManager
     {
-        private static AudioLibrary CachedLibrary;
-        private static AudioManagerSettings CachedSettings;
+        private static AudioLibrary Library = AssetAccessor.GetAsset<AudioLibrary>();
+        private static AudioManagerSettings Settings = AssetAccessor.GetAsset<AudioManagerSettings>();
         private static Dictionary<string, AudioData> CachedDictionary;
         private static int ActiveClipCount { get; set; }
         private static readonly string ActiveClipPrefix = "Clip_";
-
-        private static AudioLibrary Library
-        {
-            get 
-            {
-                if (CachedLibrary == null)
-                    CachedLibrary = Resources.Load("Audio Manager/Audio Library") as AudioLibrary;
-
-                return CachedLibrary;
-            }
-        }
         
-        private static AudioManagerSettings Settings
-        {
-            get 
-            {
-                if (CachedSettings == null)
-                    CachedSettings = Resources.Load("Audio Manager/Audio Manager Settings") as AudioManagerSettings;
-
-                return CachedSettings;
-            }
-        }
-
         private static Dictionary<string, AudioData> Dictionary
         {
             get

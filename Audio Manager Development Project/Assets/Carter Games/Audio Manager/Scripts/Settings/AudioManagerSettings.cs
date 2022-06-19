@@ -3,7 +3,7 @@ using UnityEngine.Audio;
 
 namespace CarterGames.Assets.AudioManager
 {
-    public class AudioManagerSettings : ScriptableObject
+    public class AudioManagerSettings : AudioManagerAsset
     {
         [SerializeField] private string version = "3.0.0";
         [SerializeField] private string releaseDate = "TBA";
