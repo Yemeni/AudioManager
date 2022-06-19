@@ -8,8 +8,8 @@ namespace CarterGames.Assets.AudioManager.Editor
 {
     public static class LibraryAssetHandler
     {
-        private static AudioLibrary AudioLibraryAsset;
-        public const string LibraryPath = "Assets/Resources/Audio Manager/Audio Library.asset";
+        private static AudioLibrary AudioLibraryAsset = AssetAccessor.GetAsset<AudioLibrary>();
+        private const string LibraryPath = "Assets/Resources/Audio Manager/Audio Library.asset";
         private const string LibraryFilter = "t:AudioLibrary";
 
 
@@ -22,31 +22,12 @@ namespace CarterGames.Assets.AudioManager.Editor
             return AudioLibraryAsset;
         }
 
-
         public static AudioLibrary GetAsset()
         {
-            if (AudioLibraryAsset != null) return AudioLibraryAsset;
-            
-            if (Application.isPlaying)
-            {
-                AudioLibraryAsset = Resources.Load(LibraryPath) as AudioLibrary;
-                return AudioLibraryAsset;
-            }
-            else
-            {
-                var asset = AssetDatabase.FindAssets(LibraryFilter, null);
-
-                if (asset.Length <= 0) return CreateLibraryAsset();
-                    
-                var path = AssetDatabase.GUIDToAssetPath(asset[0]);
-                var loadedAsset = (AudioLibrary)AssetDatabase.LoadAssetAtPath(path, typeof(AudioLibrary));
-
-                AudioLibraryAsset = loadedAsset;
-                return AudioLibraryAsset;
-            }
+            return AssetAccessor.GetAsset<AudioLibrary>();
         }
-        
-        
+
+
         public static Dictionary<string, AudioData> Dictionary(AudioLibrary lib)
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;

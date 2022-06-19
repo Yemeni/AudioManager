@@ -15,10 +15,10 @@ namespace CarterGames.Assets.AudioManager.Editor
 {
     public class EditGroups
     {
-        private static AudioLibrary library = (AudioLibrary)AmEditorUtils.GetFile<AudioLibrary>("t:audiolibrary");
+        private static readonly AudioLibrary library = AssetAccessor.GetAsset<AudioLibrary>();
         private static Vector2 scrollRect;
         private static bool hasMadeChanges;
-
+        
 
         public static void DrawAllGroups()
         {
@@ -103,8 +103,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                 {
                     EditorGUILayout.BeginHorizontal();
                     
-                    data.Clips[i] =
-                        GetClipFromIndex(EditorGUILayout.Popup(GetIndexOfClip(data.Clips[i]), library.AllClipNames));
+                    data.Clips[i] = GetClipFromIndex(EditorGUILayout.Popup(GetIndexOfClip(data.Clips[i]), library.AllClipNames));
                     
                     if (GUILayout.Button("-", GUILayout.Width(20f)))
                     {

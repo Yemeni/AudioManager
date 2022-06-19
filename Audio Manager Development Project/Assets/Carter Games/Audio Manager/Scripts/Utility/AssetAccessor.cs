@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager
@@ -9,12 +8,12 @@ namespace CarterGames.Assets.AudioManager
         private static AudioManagerAsset[] assets;
 
 
-        private static IEnumerable<AudioManagerAsset> Assets
+        private static AudioManagerAsset[] Assets
         {
             get
             {
                 if (assets != null) return assets;
-                assets = Resources.LoadAll<AudioManagerAsset>("Assets/Resources");
+                assets = Resources.LoadAll("Audio Manager", typeof(AudioManagerAsset)).Cast<AudioManagerAsset>().ToArray();
                 return assets;
             }
         }

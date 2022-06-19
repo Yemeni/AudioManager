@@ -7,7 +7,7 @@
 
 namespace CarterGames.Assets.AudioManager
 {
-    public static class MusicTransitions
+    public static class TransitionsHandler
     {
         public static void Fade()
         {

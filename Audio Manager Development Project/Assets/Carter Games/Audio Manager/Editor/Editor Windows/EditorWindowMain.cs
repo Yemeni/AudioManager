@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -85,7 +82,7 @@ namespace CarterGames.Assets.AudioManager.Editor
         {
             EditorGUILayout.Space();
             
-            editorTabPos.intValue = GUILayout.Toolbar(editorTabPos.intValue, new[] { "Edit Library", "Edit Groups" });
+            editorTabPos.intValue = GUILayout.Toolbar(editorTabPos.intValue, new[] { "Edit Library", "Edit Groups", "Edit Curves" });
 
             switch (editorTabPos.intValue)
             {
@@ -94,6 +91,8 @@ namespace CarterGames.Assets.AudioManager.Editor
                     break;
                 case 1:
                     EditGroups.DrawAllGroups();
+                    break;
+                case 2:
                     break;
             }
         }
