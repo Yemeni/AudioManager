@@ -27,17 +27,3 @@ MonoBehaviour:
       mixerGroup: {fileID: 0}
     startTime: 0
     endTime: 0
-  - id: 
-    data:
-      key: 
-      value: {fileID: 0}
-      baseVolume: 0
-      basePitch: 0
-    settings:
-      volume: 0
-      pitch: 0
-      loop: 0
-      priority: 0
-      mixerGroup: {fileID: 0}
-    startTime: 0
-    endTime: 0

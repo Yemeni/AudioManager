@@ -8,5 +8,6 @@ namespace CarterGames.Assets.AudioManager
     {
         public string id;
         public AnimationCurve curve;
+        public CustomFadeTypes fadeType;
     }
 }

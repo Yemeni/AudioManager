@@ -27,7 +27,7 @@ MonoBehaviour:
   minPitchVariance: -0.1
   maxPitchVariance: 0.1
   numberPerPageInEditor: 10
-  editorTabPosition: 0
+  editorTabPosition: 2
   showVariance: 0
   showEditorOptions: 0
   <CanPlayAudio>k__BackingField: 1

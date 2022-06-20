@@ -5,6 +5,7 @@ namespace CarterGames.Assets.AudioManager.Editor
 {
     public class EditorWindowMain : EditorWindow
     {
+        private static SerializedObject settingsObject;
         private static SerializedProperty editorTabPos;
         private AudioLibrary library;
 
@@ -30,14 +31,16 @@ namespace CarterGames.Assets.AudioManager.Editor
             };
             
             window.Show();
-            editorTabPos = new SerializedObject(AmEditorUtils.Settings).FindProperty("editorTabPosition");
+            settingsObject = new SerializedObject(AmEditorUtils.Settings);
+            editorTabPos = settingsObject.FindProperty("editorTabPosition");
             editorTabPos.intValue = tab;
         }
 
 
         private void OnEnable()
         {
-            editorTabPos = new SerializedObject(AmEditorUtils.Settings).FindProperty("editorTabPosition");
+            settingsObject = new SerializedObject(AmEditorUtils.Settings);
+            editorTabPos = settingsObject.FindProperty("editorTabPosition");
         }
 
 
@@ -57,6 +60,10 @@ namespace CarterGames.Assets.AudioManager.Editor
             
             EditGroups.GetGroupsInFile();
 
+            EditorWindow editorWindow = this;
+            editorWindow.minSize = new Vector2(500f, 500f);
+            editorWindow.maxSize = new Vector2(800f, 750f);
+            
             DrawHeader();
             DrawTabButtons();
         }
@@ -77,12 +84,13 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
 
 
-        
+
         private void DrawTabButtons()
         {
             EditorGUILayout.Space();
-            
-            editorTabPos.intValue = GUILayout.Toolbar(editorTabPos.intValue, new[] { "Edit Library", "Edit Groups", "Edit Curves" });
+
+            editorTabPos.intValue = GUILayout.Toolbar(editorTabPos.intValue,
+                new[] { "Edit Library", "Edit Groups", "Edit Curves" });
 
             switch (editorTabPos.intValue)
             {
@@ -96,6 +104,9 @@ namespace CarterGames.Assets.AudioManager.Editor
                     EditCurves.DrawAllCurves();
                     break;
             }
+
+            settingsObject.ApplyModifiedProperties();
+            settingsObject.Update();
         }
     }
 }

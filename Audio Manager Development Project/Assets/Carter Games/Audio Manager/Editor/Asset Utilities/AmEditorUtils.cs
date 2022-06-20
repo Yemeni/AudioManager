@@ -12,7 +12,7 @@ namespace CarterGames.Assets.AudioManager
         internal static readonly Color Blue = new Color32(151, 196, 255, 255);
         internal static readonly Color Hidden = new Color(0, 0, 0, .3f);
         internal static readonly Color Red = new Color32(255, 150, 157, 255);
-
+        
         private static Texture2D cachedManagerHeaderImg;
         private static Texture2D cachedManagerHeaderLogoTransparentImg;
         private static Texture2D cachedCarterGamesBannerImg;

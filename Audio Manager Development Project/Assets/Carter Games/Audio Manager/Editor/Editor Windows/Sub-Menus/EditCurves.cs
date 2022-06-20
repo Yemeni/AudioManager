@@ -9,10 +9,18 @@ namespace CarterGames.Assets.AudioManager.Editor
         private static readonly AudioLibrary library = AssetAccessor.GetAsset<AudioLibrary>();
         private static Vector2 scrollRect;
         private static bool hasMadeChanges;
+        
+        private static Color DefaultGUIColor;
+        private static Color DefaultGUIBackground;
 
+        
+        
+        
 
         public static void DrawAllCurves()
         {
+            GetEditorColours();
+            
             EditorGUILayout.Space();
 
             var transitions = LibraryAssetHandler.CustomTransitions();
@@ -44,12 +52,17 @@ namespace CarterGames.Assets.AudioManager.Editor
             }
             
             
-
             EditorGUILayout.EndHorizontal();
 
             scrollRect = EditorGUILayout.BeginScrollView(scrollRect);
             EditorGUILayout.BeginVertical("box");
-            
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Id", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Curve", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Behaviour", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("   ", GUIStyle.none, GUILayout.Width(40f));
+            EditorGUILayout.EndHorizontal();
 
             for (var i = 0; i < transitions.Count; i++)
             {
@@ -63,30 +76,26 @@ namespace CarterGames.Assets.AudioManager.Editor
 
         private static void DrawTransition(CustomTransition data)
         {
-            var curveName = data.id;
-
             EditorGUILayout.BeginHorizontal();
-
             
-            data.id = EditorGUILayout.TextField(
-                new GUIContent("Transition Id:",
-                    "The name to refer to this transition as, it cannot match another transition name."), data.id);
+            data.id = EditorGUILayout.TextField(GUIContent.none, data.id, GUILayout.MinWidth(50f));
 
             // Avoids dup names...
             if (DoesTransitionNameExist(data.id, true, out var total))
                 data.id += $"({total - 1})";
-
-
-            data.curve =
-                EditorGUILayout.CurveField(new GUIContent("Transition Curve:", "The curve to use in the transition"),
-                    data.curve);
             
+            data.curve = EditorGUILayout.CurveField(GUIContent.none, data.curve, GUILayout.MinWidth(50f));
+            
+            data.fadeType = (CustomFadeTypes) EditorGUILayout.EnumPopup(data.fadeType, GUILayout.MinWidth(50f));
+
+            GUI.color = AmEditorUtils.Green;
             if (GUILayout.Button("+", GUILayout.Width(20f)))
             {
                 //data.Clips.Add(library.AllClipNames[0]);
+                
                 hasMadeChanges = true;
             }
-            
+            GUI.color = AmEditorUtils.Red;
             if (GUILayout.Button("-", GUILayout.Width(20f)))
             {
                 //library.RemoveGroup(data);
@@ -94,6 +103,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                 hasMadeChanges = true;
                 return;
             }
+            GUI.color = DefaultGUIColor;
 
             EditorGUILayout.EndHorizontal();
             EditorGUI.indentLevel--;
@@ -110,6 +120,17 @@ namespace CarterGames.Assets.AudioManager.Editor
                 : transitions.Where(t => !string.IsNullOrEmpty(t.id)).Count(t => t.id.Equals(name) || t.id.Contains(name));
 
             return total > 1;
+        }
+
+
+
+        private static void GetEditorColours()
+        {
+            if (DefaultGUIColor != GUI.color)
+                DefaultGUIColor = GUI.color;
+            
+            if (DefaultGUIBackground != GUI.backgroundColor)
+                DefaultGUIBackground = GUI.backgroundColor;
         }
     }
 }
