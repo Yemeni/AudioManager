@@ -28,10 +28,10 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
 
 
-        public static Dictionary<string, AudioData> Dictionary(AudioLibrary lib)
+        public static Dictionary<string, AudioData> Dictionary()
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
-            return (Dictionary<string, AudioData>) lib.GetType().GetField("library", flags)?.GetValue(lib);  
+            return (Dictionary<string, AudioData>) AudioLibraryAsset.GetType().GetField("library", flags)?.GetValue(AudioLibraryAsset);  
         }
         
         
@@ -42,10 +42,10 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
         
         
-        public static AudioMixerGroup[] MixerGroups(AudioLibrary lib)
+        public static AudioMixerGroup[] MixerGroups()
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
-            return (AudioMixerGroup[]) lib.GetType().GetField("mixers", flags)?.GetValue(AudioLibraryAsset);
+            return (AudioMixerGroup[]) AudioLibraryAsset.GetType().GetField("mixers", flags)?.GetValue(AudioLibraryAsset);
         }
         
         
@@ -53,6 +53,20 @@ namespace CarterGames.Assets.AudioManager.Editor
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
             AudioLibraryAsset.GetType().GetField("mixers", flags)?.SetValue(AudioLibraryAsset, value);
+        }
+        
+        
+        public static List<CustomTransition> CustomTransitions()
+        {
+            const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+            return (List<CustomTransition>) AudioLibraryAsset.GetType().GetField("customTransitions", flags)?.GetValue(AudioLibraryAsset);
+        }
+        
+        
+        public static void SetCustomTransitions(List<CustomTransition> value)
+        {
+            const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
+            AudioLibraryAsset.GetType().GetField("customTransitions", flags)?.SetValue(AudioLibraryAsset, value);
         }
     }
 }

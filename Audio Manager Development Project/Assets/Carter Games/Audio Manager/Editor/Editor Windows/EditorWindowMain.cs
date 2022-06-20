@@ -93,6 +93,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                     EditGroups.DrawAllGroups();
                     break;
                 case 2:
+                    EditCurves.DrawAllCurves();
                     break;
             }
         }

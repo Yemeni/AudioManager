@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager.Editor
 {
-    public class EditLibrary
+    public static class EditLibrary
     {
         private static AudioLibrary Library = (AudioLibrary)AmEditorUtils.GetFile<AudioLibrary>("t:audiolibrary");
         private static AudioManagerSettings Settings = (AudioManagerSettings)AmEditorUtils.GetFile<AudioManagerSettings>("t:audiomanagersettings");

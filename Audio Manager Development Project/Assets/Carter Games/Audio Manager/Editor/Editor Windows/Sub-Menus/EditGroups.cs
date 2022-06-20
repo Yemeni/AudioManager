@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager.Editor
 {
-    public class EditGroups
+    public static class EditGroups
     {
         private static readonly AudioLibrary library = AssetAccessor.GetAsset<AudioLibrary>();
         private static Vector2 scrollRect;

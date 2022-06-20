@@ -12,7 +12,7 @@ namespace CarterGames.Assets.AudioManager
         [SerializeField] private List<GroupData> groups = new List<GroupData>();
         [SerializeField] private string[] allClipNames;
         [SerializeField] private AudioMixerGroup[] mixers;
-        [SerializeField] private CustomTransition[] customTransitions;
+        [SerializeField] private List<CustomTransition> customTransitions;
         
         public bool HasClip(string request) => library.Any(t => t.key.Equals(request));
         public AudioData GetClip(string request) => library.First(t => t.key.Equals(request));
