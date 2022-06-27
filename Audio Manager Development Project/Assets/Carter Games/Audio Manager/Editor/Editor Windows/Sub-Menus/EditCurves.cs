@@ -13,9 +13,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         private static Color DefaultGUIColor;
         private static Color DefaultGUIBackground;
 
-        
-        
-        
+        private static SerializedObject obj;
+        private static SerializedProperty transitions;
+
 
         public static void DrawAllCurves()
         {
@@ -23,7 +23,12 @@ namespace CarterGames.Assets.AudioManager.Editor
             
             EditorGUILayout.Space();
 
-            var transitions = LibraryAssetHandler.CustomTransitions();
+            if (obj == null)
+            {
+                obj = new SerializedObject(library);
+            }
+
+            transitions = obj.FindProperty("customTransitions");
 
             EditorGUILayout.HelpBox(
                 ".",
@@ -32,12 +37,20 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Create New Transition"))
             {
-                transitions.Add(new CustomTransition());
-
-                var newTransition = transitions[transitions.Count - 1];
+                var newIndex = 0;
                 
-                if (DoesTransitionNameExist(newTransition.id, false, out var total))
-                    newTransition.id += $"({total - 1})";
+                if (transitions.arraySize > 0)
+                {
+                    newIndex = transitions.arraySize - 1;
+                }
+                
+                transitions.InsertArrayElementAtIndex(newIndex);
+
+                var newTransition = transitions.GetArrayElementAtIndex(newIndex);
+                newTransition.FindPropertyRelative("uniqueId").intValue = newIndex;
+                
+                if (DoesTransitionNameExist(newTransition.FindPropertyRelative("id").stringValue, newTransition.FindPropertyRelative("uniqueId").intValue, false, out var total))
+                    newTransition.FindPropertyRelative("id").stringValue += $"({total - 1})";
 
                 hasMadeChanges = true;
             }
@@ -64,9 +77,9 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.LabelField("   ", GUIStyle.none, GUILayout.Width(40f));
             EditorGUILayout.EndHorizontal();
 
-            for (var i = 0; i < transitions.Count; i++)
+            for (var i = 0; i < transitions.arraySize; i++)
             {
-                DrawTransition(transitions[i]);
+                DrawTransition(transitions.GetArrayElementAtIndex(i), i);
             }
 
             EditorGUILayout.EndVertical();
@@ -74,50 +87,62 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
 
 
-        private static void DrawTransition(CustomTransition data)
+        private static void DrawTransition(SerializedProperty data, int index)
         {
+            EditorGUI.BeginChangeCheck();
             EditorGUILayout.BeginHorizontal();
             
-            data.id = EditorGUILayout.TextField(GUIContent.none, data.id, GUILayout.MinWidth(50f));
+            EditorGUILayout.PropertyField(data.FindPropertyRelative("id"), GUIContent.none, GUILayout.MinWidth(50f));
 
             // Avoids dup names...
-            if (DoesTransitionNameExist(data.id, true, out var total))
-                data.id += $"({total - 1})";
+            if (DoesTransitionNameExist(data.FindPropertyRelative("id").stringValue, data.FindPropertyRelative("uniqueId").intValue, true, out var total))
+                data.FindPropertyRelative("id").stringValue += $"({total - 1})";
             
-            data.curve = EditorGUILayout.CurveField(GUIContent.none, data.curve, GUILayout.MinWidth(50f));
+            EditorGUILayout.PropertyField(data.FindPropertyRelative("curve"), GUIContent.none, GUILayout.MinWidth(50f));
             
-            data.fadeType = (CustomFadeTypes) EditorGUILayout.EnumPopup(data.fadeType, GUILayout.MinWidth(50f));
+            EditorGUILayout.PropertyField(data.FindPropertyRelative("fadeType"), GUIContent.none, GUILayout.MinWidth(50f));
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                obj.ApplyModifiedProperties();
+                obj.Update();
+            }
 
             GUI.color = AmEditorUtils.Green;
             if (GUILayout.Button("+", GUILayout.Width(20f)))
             {
-                //data.Clips.Add(library.AllClipNames[0]);
-                
-                hasMadeChanges = true;
+                transitions.InsertArrayElementAtIndex(index);
+                transitions.GetArrayElementAtIndex(index).FindPropertyRelative("uniqueId").intValue = transitions.arraySize - 1;
             }
             GUI.color = AmEditorUtils.Red;
             if (GUILayout.Button("-", GUILayout.Width(20f)))
             {
-                //library.RemoveGroup(data);
-                //EnumHandler.RefreshGroups();
-                hasMadeChanges = true;
-                return;
+                transitions.DeleteArrayElementAtIndex(index);
             }
             GUI.color = DefaultGUIColor;
 
             EditorGUILayout.EndHorizontal();
-            EditorGUI.indentLevel--;
         }
 
 
 
-        private static bool DoesTransitionNameExist(string name, bool allowClose, out int total)
+        private static bool DoesTransitionNameExist(string name, int uniqueId, bool allowClose, out int total)
         {
-            var transitions = LibraryAssetHandler.CustomTransitions();
+            var allTransitions = LibraryAssetHandler.CustomTransitions();
             
             total = allowClose 
-                ? transitions.Where(t => !string.IsNullOrEmpty(t.id)).Count(t => t.id.Equals(name)) 
-                : transitions.Where(t => !string.IsNullOrEmpty(t.id)).Count(t => t.id.Equals(name) || t.id.Contains(name));
+                ? allTransitions.Where(t => !string.IsNullOrEmpty(t.id)).Count(t => t.id.Equals(name)) 
+                : allTransitions.Where(t => !string.IsNullOrEmpty(t.id)).Count(t => t.id.Equals(name) || t.id.Contains(name));
+
+            if (total > 1)
+            {
+                var indexedObj = allTransitions.FirstOrDefault(t => t.id.Equals(name));
+                if (indexedObj.uniqueId.Equals(uniqueId))
+                {
+                    total = 0;
+                    return total > 1;
+                }
+            }
 
             return total > 1;
         }

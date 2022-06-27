@@ -61,8 +61,8 @@ namespace CarterGames.Assets.AudioManager.Editor
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
             return (List<CustomTransition>) AudioLibraryAsset.GetType().GetField("customTransitions", flags)?.GetValue(AudioLibraryAsset);
         }
-        
-        
+
+
         public static void SetCustomTransitions(List<CustomTransition> value)
         {
             const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Instance;
