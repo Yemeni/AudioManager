@@ -4,43 +4,68 @@ namespace CarterGames.Assets.AudioManager
 {
     public class Evt
     {
-        private event Action action = delegate { };
+        private event Action Action = delegate { };
 
-        public void Raise()
-        {
-            action.Invoke();
-        }
+        
+        /// <summary>
+        /// Raises the event to all listeners.
+        /// </summary>
+        public void Raise() => Action.Invoke();
 
+        
+        /// <summary>
+        /// Adds the action/method to the event listeners.
+        /// </summary>
         public void Add(Action listener)
         {
-            action -= listener;
-            action += listener;
+            Action -= listener;
+            Action += listener;
         }
 
-        public void Remove(Action listener)
-        {
-            action -= listener;
-        }
+        
+        /// <summary>
+        /// Removes the action/method to the event listeners.
+        /// </summary>
+        public void Remove(Action listener) => Action -= listener;
+        
+        
+        /// <summary>
+        /// Clears all listeners from the event.
+        /// </summary>
+        public void Clear() => Action = null;
     }
+    
     
     public class Evt<T>
     {
-        private event Action<T> action = delegate { };
+        private event Action<T> Action = delegate { };
 
-        public void Raise(T param)
-        {
-            action.Invoke(param);
-        }
+        
+        /// <summary>
+        /// Raises the event to all listeners.
+        /// </summary>
+        public void Raise(T param) => Action.Invoke(param);
 
+        
+        /// <summary>
+        /// Adds the action/method to the event listeners.
+        /// </summary>
         public void Add(Action<T> listener)
         {
-            action -= listener;
-            action += listener;
+            Action -= listener;
+            Action += listener;
         }
+        
 
-        public void Remove(Action<T> listener)
-        {
-            action -= listener;
-        }
+        /// <summary>
+        /// Removes the action/method to the event listeners.
+        /// </summary>
+        public void Remove(Action<T> listener) => Action -= listener;
+
+        
+        /// <summary>
+        /// Clears all listeners from the event.
+        /// </summary>
+        public void Clear() => Action = null;
     }
 }

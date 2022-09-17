@@ -4,27 +4,43 @@ using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager
 {
+    /// <summary>
+    /// The main manager class of the asset... used to play clips from...
+    /// </summary>
     public static class AudioManager
     {
-        private static AudioLibrary Library = AssetAccessor.GetAsset<AudioLibrary>();
-        private static AudioManagerSettings Settings = AssetAccessor.GetAsset<AudioManagerSettings>();
-        private static Dictionary<string, AudioData> CachedDictionary;
-        private static int ActiveClipCount { get; set; }
+        //
+        //  Fields
+        //
+        
+        
+        private static readonly AudioLibrary Library = AssetAccessor.GetAsset<AudioLibrary>();
+        private static readonly AudioManagerSettings Settings = AssetAccessor.GetAsset<AudioManagerSettings>();
+        private static Dictionary<string, AudioData> _cachedDictionary;
         private static readonly string ActiveClipPrefix = "Clip_";
+        
+        
+        //
+        //  Properties
+        //
+        
+        
+        private static int ActiveClipCount { get; set; }
+        
         
         private static Dictionary<string, AudioData> Dictionary
         {
             get
             {
-                if (CachedDictionary != null) return CachedDictionary;
+                if (_cachedDictionary != null) return _cachedDictionary;
                 
                 var lib = Library.GetData;
-                CachedDictionary = new Dictionary<string, AudioData>();
+                _cachedDictionary = new Dictionary<string, AudioData>();
 
                 foreach (var data in lib)
-                    CachedDictionary.Add(data.key, data);
+                    _cachedDictionary.Add(data.key, data);
 
-                return CachedDictionary;
+                return _cachedDictionary;
             }
         }
 
@@ -32,7 +48,7 @@ namespace CarterGames.Assets.AudioManager
         private static bool HasClip(string request) => Dictionary.ContainsKey(request);
 
 
-        private static AudioData GetData(string request)
+        private static AudioData GetDataFromString(string request)
         {
             if (HasClip(request)) return Dictionary[request];
             AmLog.Error($"Unable to find clip: {request} in the library.");
@@ -79,10 +95,10 @@ namespace CarterGames.Assets.AudioManager
                 variance != null && variance.Value ? Mathf.Clamp01(data.baseVolume + Settings.variantVolume) : data.baseVolume,
                 variance != null && variance.Value ? Mathf.Clamp(data.basePitch + Settings.variantPitch, -3f, 3f) : data.basePitch, priority, loop);
 
-            var source = AudioHandler.SetupAudioSource(data.value, settings);
-            source.ClipInfo.SetClipId($"{ActiveClipPrefix}{ActiveClipCount}");
+            var clipPlayer = AudioHandler.SetupClipPlayer(data.value, settings);
+            clipPlayer.ClipInfo.SetClipId($"{ActiveClipPrefix}{ActiveClipCount}");
             ActiveClipCount++;
-            return source;
+            return clipPlayer;
         }
         
         
@@ -96,7 +112,7 @@ namespace CarterGames.Assets.AudioManager
                 variance != null && variance.Value ? Mathf.Clamp01(volume ?? data.baseVolume + Settings.variantVolume) : volume,
                 variance != null && variance.Value ? Mathf.Clamp(pitch ?? data.basePitch + Settings.variantPitch, -3f, 3f) : pitch, priority, loop);
 
-            var source = AudioHandler.SetupAudioSource(data.value, settings);
+            var source = AudioHandler.SetupClipPlayer(data.value, settings);
             source.ClipInfo.SetClipId($"{ActiveClipPrefix}{ActiveClipCount}");
             ActiveClipCount++;
             return source;
@@ -109,7 +125,7 @@ namespace CarterGames.Assets.AudioManager
         /// <returns>AudioClipPlayer setup for use...</returns>
         private static AudioClipPlayer SetupPlayer(AudioData data, AdvancedAudioSettings settings)
         {
-            var source = AudioHandler.SetupAudioSource(data.value, settings);
+            var source = AudioHandler.SetupClipPlayer(data.value, settings);
             source.ClipInfo.SetClipId($"{ActiveClipPrefix}{ActiveClipCount}");
             ActiveClipCount++;
             return source;
@@ -149,8 +165,10 @@ namespace CarterGames.Assets.AudioManager
                 AudioDisabledLog();
                 return null;
             }
+
+            var setup = SetupPlayer(GetDataFromString(request), variance, mixer, priority, loop);
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetData(request), variance, mixer, priority, loop));
+            return AudioHandler.PlayClip(setup);
         }
         
         
@@ -169,7 +187,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetRandomClip(), variance, mixer, priority, loop));
+            return AudioHandler.PlayClip(SetupPlayer(GetRandomClip(), variance, mixer, priority, loop));
         }
         
         
@@ -190,9 +208,9 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            var setup = SetupPlayer(GetData(request), variance, mixer, priority, loop);
-            setup.Source.time = time;
-            return AudioHandler.ClipPlayer(setup);
+            var setup = SetupPlayer(GetDataFromString(request), variance, mixer, priority, loop);
+            setup.AudioSource.time = time;
+            return AudioHandler.PlayClip(setup);
         }
         
         
@@ -213,7 +231,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetData(request), variance, mixer, priority, loop), delay);
+            return AudioHandler.PlayClip(SetupPlayer(GetDataFromString(request), variance, mixer, priority, loop), delay);
         }
         
         
@@ -249,9 +267,9 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            var setup = SetupPlayer(GetData(request), variance, mixer, priority, loop);
+            var setup = SetupPlayer(GetDataFromString(request), variance, mixer, priority, loop);
             setup.transform.position = position;
-            var source = AudioHandler.ClipPlayer(setup);
+            var source = AudioHandler.PlayClip(setup);
             return source;
         }
         
@@ -318,9 +336,9 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            var setup = SetupPlayer(GetData(request), variance, mixer, priority, loop);
+            var setup = SetupPlayer(GetDataFromString(request), variance, mixer, priority, loop);
             setup.transform.SetParent(transform);
-            return AudioHandler.ClipPlayer(setup);
+            return AudioHandler.PlayClip(setup);
         }
         
         #endregion
@@ -345,7 +363,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetData(request), volume, pitch, variance, priority, loop));
+            return AudioHandler.PlayClip(SetupPlayer(GetDataFromString(request), volume, pitch, variance, priority, loop));
         }
         
         
@@ -366,7 +384,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetRandomClip(), volume, pitch, variance, priority, loop));
+            return AudioHandler.PlayClip(SetupPlayer(GetRandomClip(), volume, pitch, variance, priority, loop));
         }
         
         
@@ -389,9 +407,9 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            var setup = SetupPlayer(GetData(request), volume, pitch, variance, priority, loop);
-            setup.Source.time = time;
-            return AudioHandler.ClipPlayer(setup);
+            var setup = SetupPlayer(GetDataFromString(request), volume, pitch, variance, priority, loop);
+            setup.AudioSource.time = time;
+            return AudioHandler.PlayClip(setup);
         }
         
         
@@ -414,7 +432,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetRandomClip(), volume, pitch, variance, priority, loop), delay);
+            return AudioHandler.PlayClip(SetupPlayer(GetRandomClip(), volume, pitch, variance, priority, loop), delay);
         }
         
         
@@ -454,9 +472,9 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            var setup = SetupPlayer(GetData(request), volume, pitch, variance, priority, loop);
+            var setup = SetupPlayer(GetDataFromString(request), volume, pitch, variance, priority, loop);
             setup.transform.position = position;
-            return AudioHandler.ClipPlayer(setup);
+            return AudioHandler.PlayClip(setup);
         }
         
         
@@ -530,9 +548,9 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            var setup = SetupPlayer(GetData(request), volume, pitch, variance, priority, loop);
+            var setup = SetupPlayer(GetDataFromString(request), volume, pitch, variance, priority, loop);
             setup.transform.SetParent(transform);
-            return AudioHandler.ClipPlayer(setup);
+            return AudioHandler.PlayClip(setup);
         }
         
         #endregion
@@ -555,7 +573,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetRandomClip(request), variance, mixer, priority, loop));
+            return AudioHandler.PlayClip(SetupPlayer(GetRandomClip(request), variance, mixer, priority, loop));
         }
 
         
@@ -577,8 +595,8 @@ namespace CarterGames.Assets.AudioManager
             }
             
             var setup = SetupPlayer(GetRandomClip(request), variance, mixer, priority, loop);
-            setup.Source.time = time;
-            return AudioHandler.ClipPlayer(setup);
+            setup.AudioSource.time = time;
+            return AudioHandler.PlayClip(setup);
         }
 
         
@@ -599,7 +617,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetRandomClip(request), variance, mixer, priority, loop), delay);
+            return AudioHandler.PlayClip(SetupPlayer(GetRandomClip(request), variance, mixer, priority, loop), delay);
         }
 
 
@@ -637,7 +655,7 @@ namespace CarterGames.Assets.AudioManager
             
             var setup = SetupPlayer(GetRandomClip(request), variance, mixer, priority, loop);
             setup.transform.position = position;
-            var source = AudioHandler.ClipPlayer(setup);
+            var source = AudioHandler.PlayClip(setup);
             return source;
         }
         
@@ -706,7 +724,7 @@ namespace CarterGames.Assets.AudioManager
             
             var setup = SetupPlayer(GetRandomClip(request), variance, mixer, priority, loop);
             setup.transform.SetParent(transform);
-            return AudioHandler.ClipPlayer(setup);
+            return AudioHandler.PlayClip(setup);
         }
         
         #endregion
@@ -731,7 +749,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetRandomClip(request), volume, pitch, variance, priority, loop));
+            return AudioHandler.PlayClip(SetupPlayer(GetRandomClip(request), volume, pitch, variance, priority, loop));
         }
 
         
@@ -755,8 +773,8 @@ namespace CarterGames.Assets.AudioManager
             }
             
             var setup = SetupPlayer(GetRandomClip(request), volume, pitch, variance, priority, loop);
-            setup.Source.time = time;
-            return AudioHandler.ClipPlayer(setup);
+            setup.AudioSource.time = time;
+            return AudioHandler.PlayClip(setup);
         }
         
         
@@ -779,7 +797,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetRandomClip(), volume, pitch, variance, priority, loop), delay);
+            return AudioHandler.PlayClip(SetupPlayer(GetRandomClip(), volume, pitch, variance, priority, loop), delay);
         }
         
         
@@ -821,7 +839,7 @@ namespace CarterGames.Assets.AudioManager
             
             var setup = SetupPlayer(GetRandomClip(request), volume, pitch, variance, priority, loop);
             setup.transform.position = position;
-            return AudioHandler.ClipPlayer(setup);
+            return AudioHandler.PlayClip(setup);
         }
         
         
@@ -897,7 +915,7 @@ namespace CarterGames.Assets.AudioManager
             
             var setup = SetupPlayer(GetRandomClip(request), volume, pitch, variance, priority, loop);
             setup.transform.SetParent(transform);
-            return AudioHandler.ClipPlayer(setup);
+            return AudioHandler.PlayClip(setup);
         }
         
         #endregion
@@ -926,7 +944,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetData(request), settings));
+            return AudioHandler.PlayClip(SetupPlayer(GetDataFromString(request), settings));
         }
         
         
@@ -943,7 +961,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetRandomClip(), settings));
+            return AudioHandler.PlayClip(SetupPlayer(GetRandomClip(), settings));
         }
         
         
@@ -962,9 +980,9 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            var setup = SetupPlayer(GetData(request), settings);
-            setup.Source.time = time;
-            return AudioHandler.ClipPlayer(setup);
+            var setup = SetupPlayer(GetDataFromString(request), settings);
+            setup.AudioSource.time = time;
+            return AudioHandler.PlayClip(setup);
         }
         
         
@@ -983,7 +1001,7 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            return AudioHandler.ClipPlayer(SetupPlayer(GetRandomClip(), settings), delay);
+            return AudioHandler.PlayClip(SetupPlayer(GetRandomClip(), settings), delay);
         }
         
         
@@ -1015,9 +1033,9 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            var setup = SetupPlayer(GetData(request), settings);
+            var setup = SetupPlayer(GetDataFromString(request), settings);
             setup.transform.position = position;
-            return AudioHandler.ClipPlayer(setup);
+            return AudioHandler.PlayClip(setup);
         }
         
         
@@ -1075,9 +1093,9 @@ namespace CarterGames.Assets.AudioManager
                 return null;
             }
             
-            var setup = SetupPlayer(GetData(request), settings);
+            var setup = SetupPlayer(GetDataFromString(request), settings);
             setup.transform.SetParent(transform);
-            return AudioHandler.ClipPlayer(setup);
+            return AudioHandler.PlayClip(setup);
         }
         
         #endregion
@@ -1099,14 +1117,14 @@ namespace CarterGames.Assets.AudioManager
         /// <returns>If it was successful</returns>
         public static bool Stop(string request)
         {
-            var clip = AudioPool.ActiveObjects.FirstOrDefault(t => t.Source.clip.name.Equals(request));
+            var clip = AudioPool.ActiveObjects.FirstOrDefault(t => t.AudioSource.clip.name.Equals(request));
             if (clip == null)
             {
                 AmLog.Warning($"Unable to find clip: <i>\"{request}\"</i> to stop.");
                 return false;
             }
 
-            clip.Source.Stop();
+            clip.AudioSource.Stop();
             return true;
         }
         
@@ -1125,7 +1143,7 @@ namespace CarterGames.Assets.AudioManager
                 return false;
             }
             
-            clip.Source.Stop();
+            clip.AudioSource.Stop();
             return true;
         }
 
@@ -1137,14 +1155,14 @@ namespace CarterGames.Assets.AudioManager
         /// <returns>If it was successful</returns>
         public static bool Stop(AudioClipInfo clipInfo)
         {
-            var clip = AudioPool.ActiveObjects.FirstOrDefault(t => t.Source.Equals(clipInfo.AudioSource));
+            var clip = AudioPool.ActiveObjects.FirstOrDefault(t => t.AudioSource.Equals(clipInfo.AudioSource));
             if (clip == null)
             {
                 AmLog.Warning("Unable to find clip of the clip info provided to stop.");
                 return false;
             }
             
-            clip.Source.Stop();
+            clip.AudioSource.Stop();
             return true;
         }
 
@@ -1156,7 +1174,7 @@ namespace CarterGames.Assets.AudioManager
         public static void StopAll()
         {
             foreach (var obj in AudioPool.ActiveObjects)
-                obj.Source.Stop();
+                obj.AudioSource.Stop();
 
             AudioPool.ActiveObjects.Clear();
         }

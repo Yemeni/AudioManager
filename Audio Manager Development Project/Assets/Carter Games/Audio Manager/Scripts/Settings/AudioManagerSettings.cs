@@ -33,8 +33,8 @@ namespace CarterGames.Assets.AudioManager
         public bool ShowDebugMessages => showDebugMessages;
         public AudioMixerGroup[] AdditionalMixerGroups => additionalMixerGroups;
 
-        [field: SerializeField] public bool CanPlayAudio { get; set; } = true;
-        [field: SerializeField] public bool CanPlayMusic { get; set; } = true;
+        public bool CanPlayAudio = true;
+        public bool CanPlayMusic = true;
 
         public float variantVolume => Random.Range(minVolumeVariance, maxVolumeVariance);
         public float variantPitch => Random.Range(minPitchVariance, maxPitchVariance);

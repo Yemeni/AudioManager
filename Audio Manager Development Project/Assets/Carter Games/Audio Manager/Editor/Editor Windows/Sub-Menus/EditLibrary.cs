@@ -12,8 +12,8 @@ namespace CarterGames.Assets.AudioManager.Editor
 {
     public static class EditLibrary
     {
-        private static AudioLibrary Library = (AudioLibrary)AmEditorUtils.GetFile<AudioLibrary>("t:audiolibrary");
-        private static AudioManagerSettings Settings = (AudioManagerSettings)AmEditorUtils.GetFile<AudioManagerSettings>("t:audiomanagersettings");
+        private static AudioLibrary Library = (AudioLibrary)AudioManagerEditorUtil.GetFile<AudioLibrary>("t:audiolibrary");
+        private static AudioManagerSettings Settings = (AudioManagerSettings)AudioManagerEditorUtil.GetFile<AudioManagerSettings>("t:audiomanagersettings");
         private static SerializedObject SettingsObject = new SerializedObject(Settings);
         private static Vector2 ScrollRect;
         private static bool HasMadeChanges;
@@ -87,7 +87,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                     PageNumber--;
             }
 
-            GUI.backgroundColor = AmEditorUtils.Green;
+            GUI.backgroundColor = AudioManagerEditorUtil.Green;
             if (GUILayout.Button(PageNumber.ToString(), GUILayout.Width(PageNumber.ToString().Width() + 7.5f)))
             {
             }
@@ -121,7 +121,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                 EditorGUILayout.LabelField("Clip", EditorStyles.boldLabel, GUILayout.Width("Clip".Width()));
             }
 
-            GUI.backgroundColor = AmEditorUtils.Red;
+            GUI.backgroundColor = AudioManagerEditorUtil.Red;
             EditorGUILayout.TextField(data.key);
             GUI.backgroundColor = DefaultGUIBackground;
             
@@ -135,7 +135,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             }
             
             GUI.enabled = false;
-            GUI.backgroundColor = AmEditorUtils.Red;
+            GUI.backgroundColor = AudioManagerEditorUtil.Red;
             EditorGUILayout.ObjectField(data.value, typeof(AudioClip), false);
             GUI.backgroundColor = DefaultGUIBackground;
             GUI.enabled = true;
@@ -166,9 +166,22 @@ namespace CarterGames.Assets.AudioManager.Editor
                 EditorGUILayout.LabelField("Pitch", EditorStyles.boldLabel, GUILayout.Width("Pitch".Width()));
             }
             data.basePitch = EditorGUILayout.Slider(data.basePitch, -3, 3);
+            
             if (first)
                 EditorGUILayout.EndVertical();
 
+            
+            if (first)
+            {
+                EditorGUILayout.BeginVertical();
+                EditorGUILayout.LabelField("Label", EditorStyles.boldLabel, GUILayout.Width("Label".Width()));
+            }
+            
+            //EditorGUILayout.PropertyField();
+            
+            if (first)
+                EditorGUILayout.EndVertical();
+            
 
             if (EditorGUI.EndChangeCheck())
             {

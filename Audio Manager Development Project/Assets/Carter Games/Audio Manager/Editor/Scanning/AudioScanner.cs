@@ -7,6 +7,9 @@ using UnityEngine.Audio;
 
 namespace CarterGames.Assets.AudioManager.Editor
 {
+    /// <summary>
+    /// Scans for audio clips when a new audio clip is added to the project...
+    /// </summary>
     public class AudioScanner : AssetPostprocessor
     {
         private static bool HasNewAudioClip;
@@ -20,11 +23,11 @@ namespace CarterGames.Assets.AudioManager.Editor
         [MenuItem("Tools/Audio Manager | CG/Perform Manual Scan")]
         public static void ManualScan()
         {
-            LibraryAssetHandler.SetDictionary(GetAllClipsInProject());
-            LibraryAssetHandler.SetMixerGroups(GetAllMixersInProject());
-            EnumHandler.RefreshClips();
-            EnumHandler.RefreshGroups();
-            EnumHandler.RefreshMixers();
+            LibraryAssetEditorUtil.SetDictionary(GetAllClipsInProject());
+            LibraryAssetEditorUtil.SetMixerGroups(GetAllMixersInProject());
+            StructHandler.RefreshClips();
+            StructHandler.RefreshGroups();
+            StructHandler.RefreshMixers();
             EditorUtility.SetDirty(Library);
         }
 
@@ -36,13 +39,13 @@ namespace CarterGames.Assets.AudioManager.Editor
             {
                 if (importedAssets.Any(t => t.Contains(".mixer")))
                 {
-                    LibraryAssetHandler.SetMixerGroups(GetAllMixersInProject());
-                    EnumHandler.RefreshMixers();
+                    LibraryAssetEditorUtil.SetMixerGroups(GetAllMixersInProject());
+                    StructHandler.RefreshMixers();
                 }
                 
                 if (!HasNewAudioClip) return;
-                LibraryAssetHandler.SetDictionary(GetAllClipsInProject());
-                EnumHandler.RefreshClips();
+                LibraryAssetEditorUtil.SetDictionary(GetAllClipsInProject());
+                StructHandler.RefreshClips();
                 EditorUtility.SetDirty(Library);
                 HasNewAudioClip = false;
             }
@@ -121,8 +124,8 @@ namespace CarterGames.Assets.AudioManager.Editor
             var clipName = clipRemovedName[clipRemovedName.Length - 1].Split('.')[0];
             var newLib = Library.GetData.Where(t => !t.key.Equals(clipName)).ToArray();
 
-            LibraryAssetHandler.SetDictionary(newLib);
-            EnumHandler.RefreshClips();
+            LibraryAssetEditorUtil.SetDictionary(newLib);
+            StructHandler.RefreshClips();
         }
     }
 }

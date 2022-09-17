@@ -9,6 +9,9 @@ using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager
 {
+    /// <summary>
+    /// Used for sending logs formatted with the asset...
+    /// </summary>
     public static class AmLog
     {
         private const string LogPrefix = "<color=#E77A7A><b>Audio Manager</b></color> | ";

@@ -1,72 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Audio;
 
 namespace CarterGames.Assets.AudioManager
 {
-    [Serializable]
-    public struct AudioSettings
-    {
-        public float volume;
-        public float pitch;
-        public bool loop;
-        public int priority;
-        public AudioMixerGroup mixerGroup;
-    }
-    
-    [Serializable]
-    public struct AdvancedAudioSettings
-    {
-        // Basic Settings
-        public bool useVariance;
-        public float volume;
-        public float pitch;
-        public bool loop;
-        public int priority;
-        public AudioMixerGroup mixerGroup;
-        
-        // Extra Settings
-        public bool? bypassEffects;
-        public bool? bypassListenerEffects;
-        public bool? bypassReverbZones;
-        public float? stereoPan;
-        public float? reverbZoneMix;
-        public float? spread;
-        public float? dopplerLevel;
-        public AudioRolloffMode rollOffMode;
-        public float? minDistance;
-        public float? maxDistance;
-    }
-    
+    /// <summary>
+    /// Handles The setup & playing of clip players when called for...
+    /// </summary>
     public static class AudioHandler
     {
-        private static AudioManagerSettings CachedSettings;
+        //
+        //  Fields
+        //
+        
+        
+        private static AudioManagerSettings _cachedSettings;                // A cache of the settings asset for use...
 
 
+        //
+        //  Properties
+        //
+        
+        
+        /// <summary>
+        /// Gets the settings asset if the cache does have it already...
+        /// </summary>
         private static AudioManagerSettings Settings
         {
-            get 
+            get
             {
-                if (CachedSettings == null)
-                    CachedSettings = Resources.Load("Audio Manager/Audio Manager Settings") as AudioManagerSettings;
+                if (_cachedSettings == null)
+                    _cachedSettings = AssetAccessor.GetAsset<AudioManagerSettings>();
 
-                return CachedSettings;
+                return _cachedSettings;
             }
         }
 
-
-        public static AudioClipPlayer SetupAudioSource(AudioClip clip, AudioSettings settings)
+        
+        //
+        //  Methods
+        //
+        
+        
+        /// <summary>
+        /// Sets up an audio clip player for use...
+        /// </summary>
+        /// <param name="clip">The audio clip to play...</param>
+        /// <param name="settings">The settings to apply...</param>
+        /// <returns>A setup clip player ready for use...</returns>
+        public static AudioClipPlayer SetupClipPlayer(AudioClip clip, AudioSettings settings)
         {
-            AudioPool.GetPrefabFromPool(out var source);
+            var clipPlayer = AudioPool.GetPrefabFromPool();
             
-            if (source == null)
+            if (clipPlayer == null)
             {
                 AmLog.ErrorWithCode(1, "Unable to find Audio Prefab Manager on prefab object, please ensure the Audio Prefab Manager is on the prefab object.");
                 return null;
             }
 
-            var audioSource = source.Source;
+            var audioSource = clipPlayer.AudioSource;
 
             audioSource.clip = clip;
             audioSource.volume = settings.volume;
@@ -75,20 +66,29 @@ namespace CarterGames.Assets.AudioManager
             audioSource.priority = settings.priority;
             audioSource.outputAudioMixerGroup = settings.mixerGroup;
 
-            return source;
+            clipPlayer.ClipInfo = new AudioClipInfo(audioSource);
+
+            return clipPlayer;
         }
         
-        public static AudioClipPlayer SetupAudioSource(AudioClip clip, AdvancedAudioSettings settings)
+        
+        /// <summary>
+        /// Sets up an audio clip player for use...
+        /// </summary>
+        /// <param name="clip">The audio clip to play...</param>
+        /// <param name="settings">The settings to apply...</param>
+        /// <returns>A setup clip player ready for use...</returns>
+        public static AudioClipPlayer SetupClipPlayer(AudioClip clip, AdvancedAudioSettings settings)
         {
-            AudioPool.GetPrefabFromPool(out var source);
+            var clipPlayer = AudioPool.GetPrefabFromPool();
             
-            if (source == null)
+            if (clipPlayer == null)
             {
                 AmLog.ErrorWithCode(1, "Unable to find Audio Prefab Manager on prefab object, please ensure the Audio Prefab Manager is on the prefab object.");
                 return null;
             }
 
-            var audioSource = source.Source;
+            var audioSource = clipPlayer.AudioSource;
 
             // Basic
             audioSource.clip = clip;
@@ -110,10 +110,21 @@ namespace CarterGames.Assets.AudioManager
             audioSource.minDistance = settings.minDistance ?? 1f;
             audioSource.maxDistance = settings.maxDistance ?? 500f;
 
-            return source;
+            clipPlayer.ClipInfo = new AudioClipInfo(audioSource);
+            
+            return clipPlayer;
         }
         
 
+        /// <summary>
+        /// Generates a settings asset based on the values entered...
+        /// </summary>
+        /// <param name="mixerGroup"></param>
+        /// <param name="volume"></param>
+        /// <param name="pitch"></param>
+        /// <param name="priority"></param>
+        /// <param name="loop"></param>
+        /// <returns></returns>
         public static AudioSettings GenerateSettings(AudioMixerGroup mixerGroup, float? volume, float? pitch, int? priority, bool? loop)
         {
             return new AudioSettings()
@@ -126,24 +137,32 @@ namespace CarterGames.Assets.AudioManager
             };
         }
 
-        public static AudioClipInfo GenerateClipInfo(string id, AudioClipPlayer source)
-        {
-            source.ClipInfo.SetClipId(id);
-            return source.ClipInfo;
-        }
 
-        public static AudioClipInfo ClipPlayer(AudioClipPlayer source)
+        /// <summary>
+        /// Plays a clip...
+        /// </summary>
+        /// <param name="clipPlayer">The player to use...</param>
+        /// <returns>The clip info for the now playing clip...</returns>
+        public static AudioClipInfo PlayClip(AudioClipPlayer clipPlayer)
         {
-            source.Source.Play();
-            AudioEvents.OnClipPlayed.Raise(source.ClipInfo);
-            return source.ClipInfo;
+            clipPlayer.SetData(clipPlayer.ClipInfo);
+            clipPlayer.AudioSource.Play();
+            AudioEvents.OnClipPlayed.Raise(clipPlayer.ClipInfo);
+            return clipPlayer.ClipInfo;
         }
         
-        public static AudioClipInfo ClipPlayer(AudioClipPlayer source, float delay)
+        
+        /// <summary>
+        /// Plays a clip with a delay...
+        /// </summary>
+        /// <param name="clipPlayer">The player to use...</param>
+        /// <param name="delay">the delay to playing the clip...</param>
+        /// <returns>The clip info for the now playing clip...</returns>
+        public static AudioClipInfo PlayClip(AudioClipPlayer clipPlayer, float delay)
         {
-            source.Source.PlayDelayed(delay);
-            AudioEvents.OnClipPlayed.Raise(source.ClipInfo);
-            return source.ClipInfo;
+            clipPlayer.AudioSource.PlayDelayed(delay);
+            AudioEvents.OnClipPlayed.Raise(clipPlayer.ClipInfo);
+            return clipPlayer.ClipInfo;
         }
     }
 }

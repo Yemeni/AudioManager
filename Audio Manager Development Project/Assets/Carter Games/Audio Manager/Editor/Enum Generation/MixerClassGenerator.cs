@@ -7,7 +7,7 @@ namespace CarterGames.Assets.AudioManager.Editor
     public static class MixerClassGenerator
     {
         private static string ClipLinePrefix = "        public const string";
-        private static string MixerClassPath => AmEditorUtils.GetPathOfFile("mixer", "Utility/Mixer.cs");
+        private static string MixerClassPath => AudioManagerEditorUtil.GetPathOfFile("mixer", "Utility/Mixer.cs");
         
         
         public static void Generate()
@@ -42,7 +42,7 @@ namespace CarterGames.Assets.AudioManager.Editor
         
         private static void WriteLine(TextWriter file, AudioMixerGroup data)
         {
-            file.WriteLine($"{ClipLinePrefix} {EnumHandler.ParseFieldName(data.name)} = \"{data.name}\";");
+            file.WriteLine($"{ClipLinePrefix} {StructHandler.ParseFieldName(data.name)} = \"{data.name}\";");
         }
         
         

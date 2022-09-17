@@ -16,7 +16,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             var window = GetWindow<EditorWindowMain>();
             window.titleContent = new GUIContent("Editor")
             {
-                image = AmEditorUtils.ManagerLogoTransparent
+                image = AudioManagerEditorUtil.ManagerLogoTransparent
             };
             
             window.Show();
@@ -27,11 +27,11 @@ namespace CarterGames.Assets.AudioManager.Editor
             var window = GetWindow<EditorWindowMain>();
             window.titleContent = new GUIContent("Editor")
             {
-                image = AmEditorUtils.ManagerLogoTransparent
+                image = AudioManagerEditorUtil.ManagerLogoTransparent
             };
             
             window.Show();
-            settingsObject = new SerializedObject(AmEditorUtils.Settings);
+            settingsObject = new SerializedObject(AudioManagerEditorUtil.Settings);
             editorTabPos = settingsObject.FindProperty("editorTabPosition");
             editorTabPos.intValue = tab;
         }
@@ -39,7 +39,7 @@ namespace CarterGames.Assets.AudioManager.Editor
 
         private void OnEnable()
         {
-            settingsObject = new SerializedObject(AmEditorUtils.Settings);
+            settingsObject = new SerializedObject(AudioManagerEditorUtil.Settings);
             editorTabPos = settingsObject.FindProperty("editorTabPosition");
         }
 
@@ -47,7 +47,7 @@ namespace CarterGames.Assets.AudioManager.Editor
         private void OnDisable()
         {
             // Closing window... apply any changes made...
-            EnumHandler.RefreshGroups();
+            StructHandler.RefreshGroups();
         }
 
 
@@ -55,7 +55,7 @@ namespace CarterGames.Assets.AudioManager.Editor
         {
             if (library == null)
             {
-                library = (AudioLibrary)AmEditorUtils.GetFile<AudioLibrary>("t:audiolibrary");
+                library = (AudioLibrary)AudioManagerEditorUtil.GetFile<AudioLibrary>("t:audiolibrary");
             }
             
             EditGroups.GetGroupsInFile();
@@ -71,12 +71,12 @@ namespace CarterGames.Assets.AudioManager.Editor
 
         private static void DrawHeader()
         {
-            if (!AmEditorUtils.ManagerHeader) return;
+            if (!AudioManagerEditorUtil.ManagerHeader) return;
             
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             
-            if (GUILayout.Button(AmEditorUtils.ManagerHeader, GUIStyle.none, GUILayout.MaxHeight(110)))
+            if (GUILayout.Button(AudioManagerEditorUtil.ManagerHeader, GUIStyle.none, GUILayout.MaxHeight(110)))
                 GUI.FocusControl(null);
             
             GUILayout.FlexibleSpace();

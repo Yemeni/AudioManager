@@ -13,7 +13,7 @@ namespace CarterGames.Assets.AudioManager.Editor
         [SettingsProvider]
         public static SettingsProvider AudioManagerSettingsProvider()
         {
-            var provider = new SettingsProvider("Preferences/Carter Games/Audio Manager", SettingsScope.User)
+            var provider = new SettingsProvider("Project/Carter Games/Audio Manager", SettingsScope.Project)
             {
                 guiHandler = (searchContext) =>
                 {
@@ -22,7 +22,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                     DrawHeaderSection();
                     
                     if (settings == null)
-                        settings = new SerializedObject(AmEditorUtils.Settings);
+                        settings = new SerializedObject(AudioManagerEditorUtil.Settings);
 
                     GUILayout.Space(7.5f);
                     DrawAssetMetaData();
@@ -41,7 +41,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                     }
                     else
                     {
-                        settings = new SerializedObject(AmEditorUtils.Settings);
+                        settings = new SerializedObject(AudioManagerEditorUtil.Settings);
                     }
                     
                     GUILayout.Space(2.5f);
@@ -57,7 +57,7 @@ namespace CarterGames.Assets.AudioManager.Editor
 
         private static void DrawHeaderSection()
         {
-            var managerHeader = AmEditorUtils.ManagerHeader;
+            var managerHeader = AudioManagerEditorUtil.ManagerHeader;
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
@@ -80,7 +80,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginVertical("HelpBox");
             GUILayout.Space(1.5f);
                     
-            GUI.color = AmEditorUtils.Red;
+            GUI.color = AudioManagerEditorUtil.Red;
             EditorGUILayout.LabelField("Info", EditorStyles.boldLabel);
             GUI.color = DefaultGUIColor;
          
@@ -97,12 +97,13 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginVertical("HelpBox");
             GUILayout.Space(1.5f);
             
-            GUI.color = AmEditorUtils.Red;
+            GUI.color = AudioManagerEditorUtil.Red;
             EditorGUILayout.LabelField("Sound", EditorStyles.boldLabel);
             GUI.color = DefaultGUIColor;
             
             EditorGUILayout.PropertyField(settings.FindProperty("audioPrefab"));
             EditorGUILayout.PropertyField(settings.FindProperty("clipAudioMixer"));
+            EditorGUILayout.PropertyField(settings.FindProperty("CanPlayAudio"));
                     
             GUILayout.Space(2.5f);
             EditorGUILayout.EndVertical();
@@ -112,12 +113,13 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginVertical("HelpBox");
             GUILayout.Space(1.5f);
                     
-            GUI.color = AmEditorUtils.Red;
+            GUI.color = AudioManagerEditorUtil.Red;
             EditorGUILayout.LabelField("Music", EditorStyles.boldLabel);
             GUI.color = DefaultGUIColor;
             
             EditorGUILayout.PropertyField(settings.FindProperty("musicPrefab"));
             EditorGUILayout.PropertyField(settings.FindProperty("musicAudioMixer"));
+            EditorGUILayout.PropertyField(settings.FindProperty("CanPlayMusic"));
                     
             GUILayout.Space(2.5f);
             EditorGUILayout.EndVertical();
@@ -130,7 +132,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginVertical("HelpBox");
             GUILayout.Space(1.5f);
 
-            GUI.color = AmEditorUtils.Red;
+            GUI.color = AudioManagerEditorUtil.Red;
             EditorGUILayout.LabelField("Optional Settings", EditorStyles.boldLabel);
             GUI.color = DefaultGUIColor;
 
@@ -267,7 +269,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                 Application.OpenURL("https://assetstore.unity.com/publishers/43356");
 
             if (GUILayout.Button("Documentation", GUILayout.Height(30), GUILayout.MinWidth(100)))
-                Application.OpenURL("https://carter.games/audiomanager/docs");
+                Application.OpenURL("https://carter.games/audiomanager/");
 
             if (GUILayout.Button("Change Log", GUILayout.Height(30), GUILayout.MinWidth(100)))
                 Application.OpenURL("https://carter.games/audiomanager/changelog");
@@ -287,7 +289,7 @@ namespace CarterGames.Assets.AudioManager.Editor
 
             EditorGUILayout.EndHorizontal();
 
-            var carterGamesBanner = AmEditorUtils.CarterGamesBanner;
+            var carterGamesBanner = AudioManagerEditorUtil.CarterGamesBanner;
 
             if (carterGamesBanner != null)
             {

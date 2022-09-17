@@ -3,58 +3,121 @@ using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager
 {
+    /// <summary>
+    /// Handles the object pooling for audio players....
+    /// </summary>
     public static class AudioPool
     {
-        private static AudioManagerSettings CachedSettings;
-        private static Stack<GameObject> audioPrefabPool;
-        private static List<AudioClipPlayer> activePrefabs;
+        //
+        //  Fields
+        //
+        
+        
+        private static AudioManagerSettings _cachedSettings;          // Holds a cache of the settings asset so it doesn't get it more than once...
+        private static Stack<AudioClipPlayer> _inactivePrefabPool;    // Holds all objects not in use...
+        private static List<AudioClipPlayer> _activePrefabPool;       // Holds all active clips...
+        private static GameObject _doNotDestroyParent;                // Holds the parent object for the pool which is in the do not destroy scene...
+        
 
-        public static Stack<GameObject> PooledObjects => audioPrefabPool;
-        public static List<AudioClipPlayer> ActiveObjects => activePrefabs;
+        //
+        //  Properties
+        //
+        
+        
+        /// <summary>
+        /// Gets all the objects currently in the pool that are not in use...
+        /// </summary>
+        public static Stack<AudioClipPlayer> PooledObjects => _inactivePrefabPool;
+        
+        
+        /// <summary>
+        /// Gets all the objects currently playing audio...
+        /// </summary>
+        public static List<AudioClipPlayer> ActiveObjects => _activePrefabPool;
 
-
+        
+        /// <summary>
+        /// Gets the settings asset if the cache doesn't already have it...
+        /// </summary>
+        /// <returns></returns>
         private static AudioManagerSettings Settings()
         {
-            if (CachedSettings != null)
-                return CachedSettings;
-            
-            CachedSettings = Resources.FindObjectsOfTypeAll<AudioManagerSettings>()[0];
-            return CachedSettings;
+            if (_cachedSettings != null)
+                return _cachedSettings;
+
+            _cachedSettings = AssetAccessor.GetAsset<AudioManagerSettings>();
+            return _cachedSettings;
         }
         
-        public static GameObject GetPrefabFromPool(out AudioClipPlayer source)
+        
+        //
+        //  Methods
+        //
+
+
+        /// <summary>
+        /// Runs before any game logic runs and initializes the pools for use with some objects in them by default...
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void Initialise()
         {
-            if (audioPrefabPool == null)
+            // Creates the parent object for the pool...
+            _doNotDestroyParent = new GameObject("Audio Pool - (Audio Manager | CG)");
+            Object.DontDestroyOnLoad(_doNotDestroyParent);
+            
+            // Initialises the pool collections...
+            _inactivePrefabPool = new Stack<AudioClipPlayer>();
+            _activePrefabPool = new List<AudioClipPlayer>();
+
+            // Initialises the initial pool so there are a few ready to go for the user...
+            for (var i = 0; i < 5; i++)
             {
-                audioPrefabPool = new Stack<GameObject>();
-                activePrefabs = new List<AudioClipPlayer>();
+                if (!Object.Instantiate(Settings().Prefab).TryGetComponent(out AudioClipPlayer playerAttached)) continue;
+                playerAttached.name = "Audio Clip Player (Instance)";
+                playerAttached.transform.SetParent(_doNotDestroyParent.transform);
+                playerAttached.gameObject.SetActive(false);
+                _inactivePrefabPool.Push(playerAttached);
+            }
+        }
+
+
+        /// <summary>
+        /// Gets a prefab from the pool of available objects...
+        /// </summary>
+        /// <returns>The next audio clip player for use...</returns>
+        public static AudioClipPlayer GetPrefabFromPool()
+        {
+            // If there are no free in the pool to use...
+            if (_inactivePrefabPool.Count > 0)
+            {
+                return _inactivePrefabPool.Pop();
             }
             
-            GameObject _go;
+            // Tries to make a new player if it is possible...
+            Object.Instantiate(Settings().Prefab).TryGetComponent(out AudioClipPlayer playerAttached);
+            playerAttached.name = "Audio Clip Player (Instance)";
+            playerAttached.transform.SetParent(_doNotDestroyParent.transform);
 
-            if (audioPrefabPool.Count > 0)
+            if (playerAttached)
             {
-                _go = audioPrefabPool.Pop();
-
-                while (_go == null & audioPrefabPool.Count > 0)
-                    _go = audioPrefabPool.Pop();
-
-                if (_go == null)
-                    _go = Object.Instantiate(Settings().Prefab);
-                
-                _go.SetActive(true);
-            }
-            else
-                _go = Object.Instantiate(Settings().Prefab);
-
-            if (_go.GetComponentInChildren<AudioClipPlayer>())
-            {
-                source = _go.GetComponentInChildren<AudioClipPlayer>();
-                return _go;
+                _activePrefabPool.Add(playerAttached);
+                return playerAttached;
             }
 
-            source = null;
+            // Error message is handled by callers of this method so no need to have one here...
             return null;
+        }
+
+
+        /// <summary>
+        /// Returns a player to the pool for re-use...
+        /// </summary>
+        /// <param name="clipPlayer">The player to return...</param>
+        public static void Return(AudioClipPlayer clipPlayer)
+        {
+            _activePrefabPool.Remove(clipPlayer);
+            _inactivePrefabPool.Push(clipPlayer);
+            clipPlayer.gameObject.SetActive(false);
         }
     }
 }

@@ -60,14 +60,14 @@ namespace CarterGames.Assets.AudioManager.Editor
             
             EditorGUILayout.BeginHorizontal();
             
-            GUI.backgroundColor = AmEditorUtils.Green;
+            GUI.backgroundColor = AudioManagerEditorUtil.Green;
             if (GUILayout.Button("Edit Additional Options"))
             {
                 EditorWindowMain.ShowWindowOnTab(0);
             }
             GUI.backgroundColor = DefaultGUIBackground;
             
-            GUI.backgroundColor = AmEditorUtils.Yellow;
+            GUI.backgroundColor = AudioManagerEditorUtil.Yellow;
             if (GUILayout.Button("Perform Manual Scan"))
             {
                 AudioScanner.ManualScan();
@@ -106,7 +106,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             
             EditorGUILayout.Space(2f);
             
-            GUI.backgroundColor = AmEditorUtils.Green;
+            GUI.backgroundColor = AudioManagerEditorUtil.Green;
             if (GUILayout.Button("Edit Groups"))
             {
                 EditorWindowMain.ShowWindowOnTab(1);

@@ -5,7 +5,7 @@ namespace CarterGames.Assets.AudioManager.Editor
     public static class ClipClassGenerator
     {
         private static string ClipLinePrefix = "        public const string";
-        private static string ClipClassPath => AmEditorUtils.GetPathOfFile("clip", "Utility/Clip.cs");
+        private static string ClipClassPath => AudioManagerEditorUtil.GetPathOfFile("clip", "Utility/Clip.cs");
         
         
         public static void Generate()
@@ -38,7 +38,7 @@ namespace CarterGames.Assets.AudioManager.Editor
         
         private static void WriteLine(TextWriter file, AudioData data)
         {
-            file.WriteLine($"{ClipLinePrefix} {EnumHandler.ParseFieldName(data.key)} = \"{data.key}\";");
+            file.WriteLine($"{ClipLinePrefix} {StructHandler.ParseFieldName(data.key)} = \"{data.key}\";");
         }
     }
 }

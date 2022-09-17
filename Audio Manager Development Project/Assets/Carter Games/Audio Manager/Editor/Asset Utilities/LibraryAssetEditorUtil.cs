@@ -6,9 +6,12 @@ using UnityEngine.Audio;
 
 namespace CarterGames.Assets.AudioManager.Editor
 {
-    public static class LibraryAssetHandler
+    /// <summary>
+    /// Handles any helper methods for managing the library asset for the asset...
+    /// </summary>
+    public static class LibraryAssetEditorUtil
     {
-        private static AudioLibrary AudioLibraryAsset = AssetAccessor.GetAsset<AudioLibrary>();
+        public static AudioLibrary AudioLibraryAsset = (AudioLibrary) AudioManagerEditorUtil.GetFile<AudioLibrary>("t:audiolibrary");
         private const string LibraryPath = "Assets/Resources/Audio Manager/Audio Library.asset";
         private const string LibraryFilter = "t:AudioLibrary";
 
@@ -20,11 +23,6 @@ namespace CarterGames.Assets.AudioManager.Editor
             AssetDatabase.Refresh();
             AudioLibraryAsset = instance as AudioLibrary;
             return AudioLibraryAsset;
-        }
-
-        public static AudioLibrary GetAsset()
-        {
-            return AssetAccessor.GetAsset<AudioLibrary>();
         }
 
 

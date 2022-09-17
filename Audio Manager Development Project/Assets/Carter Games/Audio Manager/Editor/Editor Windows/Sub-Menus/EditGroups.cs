@@ -44,7 +44,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             {
                 if (GUILayout.Button("Apply Changes"))
                 {
-                    EnumHandler.RefreshGroups();
+                    StructHandler.RefreshGroups();
                     hasMadeChanges = false;
                 }
             }
@@ -75,7 +75,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             if (GUILayout.Button("-", GUILayout.Width(20f)))
             {
                 library.RemoveGroup(data);
-                EnumHandler.RefreshGroups();
+                StructHandler.RefreshGroups();
                 hasMadeChanges = true;
                 return;
             }

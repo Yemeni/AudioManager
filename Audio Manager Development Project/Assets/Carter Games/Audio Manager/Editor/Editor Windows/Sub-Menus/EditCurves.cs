@@ -59,7 +59,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             {
                 if (GUILayout.Button("Apply Changes"))
                 {
-                    EnumHandler.RefreshGroups();
+                    StructHandler.RefreshGroups();
                     hasMadeChanges = false;
                 }
             }
@@ -108,13 +108,13 @@ namespace CarterGames.Assets.AudioManager.Editor
                 obj.Update();
             }
 
-            GUI.color = AmEditorUtils.Green;
+            GUI.color = AudioManagerEditorUtil.Green;
             if (GUILayout.Button("+", GUILayout.Width(20f)))
             {
                 transitions.InsertArrayElementAtIndex(index);
                 transitions.GetArrayElementAtIndex(index).FindPropertyRelative("uniqueId").intValue = transitions.arraySize - 1;
             }
-            GUI.color = AmEditorUtils.Red;
+            GUI.color = AudioManagerEditorUtil.Red;
             if (GUILayout.Button("-", GUILayout.Width(20f)))
             {
                 transitions.DeleteArrayElementAtIndex(index);
@@ -128,7 +128,7 @@ namespace CarterGames.Assets.AudioManager.Editor
 
         private static bool DoesTransitionNameExist(string name, int uniqueId, bool allowClose, out int total)
         {
-            var allTransitions = LibraryAssetHandler.CustomTransitions();
+            var allTransitions = LibraryAssetEditorUtil.CustomTransitions();
             
             total = allowClose 
                 ? allTransitions.Where(t => !string.IsNullOrEmpty(t.id)).Count(t => t.id.Equals(name)) 

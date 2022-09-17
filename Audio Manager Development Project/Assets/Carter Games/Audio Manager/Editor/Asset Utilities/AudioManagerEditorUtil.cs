@@ -3,22 +3,45 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace CarterGames.Assets.AudioManager
+namespace CarterGames.Assets.AudioManager.Editor
 {
-    public static class AmEditorUtils
+    public static class AudioManagerEditorUtil
     {
-        internal static readonly Color Green = new Color32(72, 222, 55, 255);
-        internal static readonly Color Yellow = new Color32(245, 234, 56, 255);
-        internal static readonly Color Blue = new Color32(151, 196, 255, 255);
-        internal static readonly Color Hidden = new Color(0, 0, 0, .3f);
-        internal static readonly Color Red = new Color32(255, 150, 157, 255);
+        //
+        //  Colours...
+        //
+
+        
+        public static readonly Color Green = new Color32(72, 222, 55, 255);
+        public static readonly Color Yellow = new Color32(245, 234, 56, 255);
+        public static readonly Color Blue = new Color32(151, 196, 255, 255);
+        public static readonly Color Hidden = new Color(0, 0, 0, .3f);
+        public static readonly Color Red = new Color32(255, 150, 157, 255);
+        
+        
+        //
+        //  (Cache) Logo's & Banners...
+        //
+        
         
         private static Texture2D cachedManagerHeaderImg;
         private static Texture2D cachedManagerHeaderLogoTransparentImg;
         private static Texture2D cachedCarterGamesBannerImg;
-        private static AudioManagerSettings cachedAudioSettings;
         
+        
+        //
+        //  Audio Managers Scriptable Assets
+        //
+        
+        
+        private static AudioManagerSettings cachedAudioSettings;
 
+
+        //
+        //  (Getters) Logo's & Banners
+        //
+        
+        
         public static Texture2D ManagerHeader
         {
             get
@@ -49,6 +72,13 @@ namespace CarterGames.Assets.AudioManager
             }
         }
 
+        
+        
+        //
+        //  (Getters) Audio Managers Scriptable Assets
+        //
+        
+        
         public static AudioManagerSettings Settings
         {
             get
@@ -59,23 +89,19 @@ namespace CarterGames.Assets.AudioManager
             }
             set => cachedAudioSettings = value;
         }
-        
-        
-        public static AudioManagerSettings SettingsRuntime
-        {
-            get
-            {
-                if (cachedAudioSettings != null) return cachedAudioSettings;
-                cachedAudioSettings = (AudioManagerSettings)GetFileAtRuntime<AudioManagerSettings>();
-                return cachedAudioSettings;
-            }
-        }
-        
 
-        public static bool HasFile(string filter)
-        {
-            return AssetDatabase.FindAssets(filter, null).Length > 0;
-        }
+
+        //
+        //  (Methods) File Management
+        //
+        
+        /// <summary>
+        /// Checks to see if a file exists in the editor...
+        /// </summary>
+        /// <param name="filter">The filter to apply...</param>
+        /// <returns>Bool</returns>
+        public static bool HasFile(string filter) => AssetDatabase.FindAssets(filter, null).Length > 0;
+        
 
         public static void CreateFile<T>(string path)
         {
@@ -107,11 +133,6 @@ namespace CarterGames.Assets.AudioManager
             var _asset = AssetDatabase.FindAssets(className, null);
             var find = _asset.FirstOrDefault(t => AssetDatabase.GUIDToAssetPath(t).Contains(toMatch));
             return AssetDatabase.GUIDToAssetPath(find);
-        }
-
-        private static object GetFileAtRuntime<T>()
-        {
-            return Resources.FindObjectsOfTypeAll(typeof(T))[0];
         }
 
         public static AudioManagerSettings GenerateSettings(AudioManagerSettings find)

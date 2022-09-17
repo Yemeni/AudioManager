@@ -16,19 +16,21 @@ MonoBehaviour:
   releaseDate: TBA
   audioPrefab: {fileID: 2444215560086890528, guid: 0f4b40a36dfa2b840b5a3e3c316a55b6,
     type: 3}
-  clipAudioMixer: {fileID: 0}
+  clipAudioMixer: {fileID: 5984795850300074693, guid: ac53c62d602e5ca4db0e4595f097ad4f,
+    type: 2}
   musicPrefab: {fileID: 3230184475905882993, guid: adcd60910c258484cba5367e294b50d7,
     type: 3}
-  musicAudioMixer: {fileID: 0}
-  showDebugMessages: 0
+  musicAudioMixer: {fileID: 6845125830649030126, guid: ac53c62d602e5ca4db0e4595f097ad4f,
+    type: 2}
+  showDebugMessages: 1
   additionalMixerGroups: []
   minVolumeVariance: -0.1
   maxVolumeVariance: 0.1
   minPitchVariance: -0.1
   maxPitchVariance: 0.1
   numberPerPageInEditor: 10
-  editorTabPosition: 2
+  editorTabPosition: 0
   showVariance: 0
   showEditorOptions: 0
-  <CanPlayAudio>k__BackingField: 1
-  <CanPlayMusic>k__BackingField: 1
+  CanPlayAudio: 1
+  CanPlayMusic: 1

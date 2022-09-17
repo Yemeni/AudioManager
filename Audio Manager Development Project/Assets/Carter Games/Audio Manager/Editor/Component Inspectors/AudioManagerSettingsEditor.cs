@@ -55,7 +55,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             
-            if (GUILayout.Button(AmEditorUtils.ManagerHeader, GUIStyle.none, GUILayout.MaxHeight(85)))
+            if (GUILayout.Button(AudioManagerEditorUtil.ManagerHeader, GUIStyle.none, GUILayout.MaxHeight(85)))
                 GUI.FocusControl(null);
             
             GUILayout.FlexibleSpace();
@@ -66,7 +66,7 @@ namespace CarterGames.Assets.AudioManager.Editor
         private static void DrawEditButton()
         {
             EditorGUILayout.Space();
-            GUI.backgroundColor = AmEditorUtils.Yellow;
+            GUI.backgroundColor = AudioManagerEditorUtil.Yellow;
             
             if (GUILayout.Button("Edit Settings", GUILayout.Height(EditorGUIUtility.singleLineHeight * 1.25f)))
                 SettingsService.OpenUserPreferences("Preferences/Carter Games/Audio Manager");
@@ -80,7 +80,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.Space();
 
-            GUI.color = AmEditorUtils.Red;
+            GUI.color = AudioManagerEditorUtil.Red;
             EditorGUILayout.LabelField("Meta Data", EditorStyles.boldLabel);
             GUI.color = DefaultGUIColor;
 
@@ -99,7 +99,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.Space();
 
-            GUI.color = AmEditorUtils.Red;
+            GUI.color = AudioManagerEditorUtil.Red;
             EditorGUILayout.LabelField("Audio Options", EditorStyles.boldLabel);
             GUI.color = DefaultGUIColor;
             
@@ -120,7 +120,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.Space();
 
-            GUI.color = AmEditorUtils.Red;
+            GUI.color = AudioManagerEditorUtil.Red;
             EditorGUILayout.LabelField("Additional Options", EditorStyles.boldLabel);
             GUI.color = DefaultGUIColor;
             
