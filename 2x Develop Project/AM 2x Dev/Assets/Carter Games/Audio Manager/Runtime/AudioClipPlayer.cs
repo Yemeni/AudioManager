@@ -1,24 +1,4 @@
-﻿/*
- * 
- *  Audio Manager
- *							  
- *	Audio Clip Player Script
- *      A clean up script that disables audio clip instances when the clip has finished playing for reuse.
- *			
- *  Written by:
- *      Jonathan Carter
- *
- *  Published By:
- *      Carter Games
- *      E: hello@carter.games
- *      W: https://www.carter.games
- *		
- *  Version: 2.5.8
- *	Last Updated: 18/06/2022 (d/m/y)										
- * 
- */
-
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager

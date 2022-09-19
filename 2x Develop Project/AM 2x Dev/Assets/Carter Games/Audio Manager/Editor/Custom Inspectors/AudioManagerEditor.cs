@@ -296,11 +296,11 @@ namespace CarterGames.Assets.AudioManager.Editor
             if (GUILayout.Button("Disable Static Instance"))
 
             {
-                if (ScriptingDefineHandler.IsScriptingDefinePresent(ScriptingDefines[0], EditorUserBuildSettings.activeBuildTarget))
+                if (ScriptingDefineHandler.IsScriptingDefinePresent())
+                {
                     ScriptingDefineHandler.RemoveScriptingDefine("Use_CGAudioManager_Static", EditorUserBuildSettings.activeBuildTarget);
-                
-                if (ScriptingDefineHandler.IsScriptingDefinePresent(ScriptingDefines[1], EditorUserBuildSettings.activeBuildTarget))
                     ScriptingDefineHandler.RemoveScriptingDefine("USE_CG_AM_STATIC", EditorUserBuildSettings.activeBuildTarget);
+                }
             }
 
             AudioManagerEditorUtil.Settings.isUsingStatic = false;
@@ -409,7 +409,7 @@ namespace CarterGames.Assets.AudioManager.Editor
 
                             if (!i.Equals(0))
                             {
-                                GUI.backgroundColor = Color.red;
+                                GUI.backgroundColor = AudioManagerEditorUtil.Red;
 
                                 if (GUILayout.Button("-", GUILayout.Width(25)))
                                     audioMixerList.DeleteArrayElementAtIndex(i);
@@ -492,8 +492,6 @@ namespace CarterGames.Assets.AudioManager.Editor
                 _elementString = fileLib.GetArrayElementAtIndex(i).FindPropertyRelative("key").stringValue;
                 _elementAudio = (AudioClip) fileLib.GetArrayElementAtIndex(i).FindPropertyRelative("value").objectReferenceValue;
 
-                Debug.Log("Display");
-                
                 // Starts the ordering
                 EditorGUILayout.BeginHorizontal();
 

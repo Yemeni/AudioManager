@@ -16,15 +16,9 @@ namespace CarterGames.Assets.AudioManager.Editor
 
         private SerializedProperty file;
         private SerializedProperty mixer;
-        private SerializedProperty clipStrings;
-        private SerializedProperty clipVolume;
-        private SerializedProperty clipPitch;
-        private SerializedProperty clipTimes;
-        private SerializedProperty clipDelays;
-        private SerializedProperty dropDownBools;
-        private SerializedProperty dropDownOptionals;
-        
-        
+        private SerializedProperty clipsToPlay;
+        private SerializedProperty scrollPos;
+
         
         private void OnEnable()
         {
@@ -32,13 +26,8 @@ namespace CarterGames.Assets.AudioManager.Editor
             
             file = serializedObject.FindProperty("audioManagerFile");
             mixer = serializedObject.FindProperty("mixer");
-            clipStrings = serializedObject.FindProperty("clipsToPlay");
-            clipVolume = serializedObject.FindProperty("clipsVolume");
-            clipPitch = serializedObject.FindProperty("clipsPitch");
-            clipTimes = serializedObject.FindProperty("clipsFromTime");
-            clipDelays = serializedObject.FindProperty("clipsWithDelay");
-            dropDownBools = serializedObject.FindProperty("dropDowns");
-            dropDownOptionals = serializedObject.FindProperty("dropDownsOptional");
+            clipsToPlay = serializedObject.FindProperty("clipsToPlay");
+            scrollPos = serializedObject.FindProperty("scrollPos");
 
             normalBgCol = GUI.backgroundColor;
         }
@@ -51,11 +40,14 @@ namespace CarterGames.Assets.AudioManager.Editor
             
             AudioSourceSetup();
 
+            DrawScriptSection();
+            GUILayout.Space(2.5f);
+            
             EditorGUILayout.BeginVertical("HelpBox");
             GUILayout.Space(2.5f);
             
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Audio Info", EditorStyles.boldLabel, GUILayout.MaxWidth(92f));
+            EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel, GUILayout.MaxWidth(92f));
             EditorGUILayout.EndHorizontal();
 
             // Audio Manager File (AMF) field
@@ -74,8 +66,7 @@ namespace CarterGames.Assets.AudioManager.Editor
 
             if (file.objectReferenceValue != null)
             {
-
-                GUILayout.Space(5f);
+                GUILayout.Space(2.5f);
 
                 EditorGUILayout.BeginVertical("HelpBox");
                 GUILayout.Space(2.5f);
@@ -86,10 +77,29 @@ namespace CarterGames.Assets.AudioManager.Editor
                 
                 GUILayout.Space(2.5f);
 
-                if (clipStrings.arraySize > 0)
+                if (clipsToPlay.arraySize > 0)
                 {
-                    for (int i = 0; i < clipStrings.arraySize; i++)
+                    scrollPos.vector2Value = EditorGUILayout.BeginScrollView(scrollPos.vector2Value, GUILayout.MaxHeight(400), GUILayout.MinHeight(0));
+                    
+                    for (var i = 0; i < clipsToPlay.arraySize; i++)
                     {
+                        // References...
+                        if (clipsToPlay.GetArrayElementAtIndex(i).serializedObject == null) continue;
+
+                        var show = clipsToPlay.GetArrayElementAtIndex(i).FindPropertyRelative("show");
+                        var clipName = clipsToPlay.GetArrayElementAtIndex(i).FindPropertyRelative("clipName");
+                        var volume = clipsToPlay.GetArrayElementAtIndex(i).FindPropertyRelative("volume");
+                        var pitch = clipsToPlay.GetArrayElementAtIndex(i).FindPropertyRelative("pitch");
+                        var showOptional = clipsToPlay.GetArrayElementAtIndex(i).FindPropertyRelative("showOptional");
+                        var fromTime = clipsToPlay.GetArrayElementAtIndex(i).FindPropertyRelative("fromTime");
+                        var clipDelay = clipsToPlay.GetArrayElementAtIndex(i).FindPropertyRelative("clipDelay");
+                        
+                        //
+                        //
+                        //
+                        //
+                        //
+
                         EditorGUILayout.BeginVertical("HelpBox");
                         GUILayout.Space(2.5f);
 
@@ -97,122 +107,102 @@ namespace CarterGames.Assets.AudioManager.Editor
                         
                         EditorGUILayout.BeginHorizontal();
                         
-                        if (clipStrings.GetArrayElementAtIndex(i).stringValue != "")
-                            dropDownBools.GetArrayElementAtIndex(i).boolValue =
-                                EditorGUILayout.Foldout(
-                                    dropDownBools.GetArrayElementAtIndex(i).boolValue,
-                                    clipStrings.GetArrayElementAtIndex(i).stringValue);
+                        if (clipName.stringValue != "")
+                            show.boolValue = EditorGUILayout.Foldout(show.boolValue, clipName.stringValue);
                         else
-                            dropDownBools.GetArrayElementAtIndex(i).boolValue =
-                                EditorGUILayout.Foldout(
-                                    dropDownBools.GetArrayElementAtIndex(i).boolValue, "New Clip...");
+                            show.boolValue = EditorGUILayout.Foldout(show.boolValue, "New Clip...");
                         
                         EditorGUI.indentLevel--;
                         
-                        GUI.backgroundColor = greenCol;
+                        GUI.backgroundColor = AudioManagerEditorUtil.Green;
                         if (GUILayout.Button("+", GUILayout.Width(30f)))
                         {
-                            AddNewElement(clipStrings.arraySize);
+                            AddNewElement(clipsToPlay.arraySize);
                         }
 
-                        GUI.backgroundColor = Color.white;
+                        GUI.backgroundColor = normalBgCol;
 
                         if (!i.Equals(0))
                         {
-                            GUI.backgroundColor = redCol;
+                            GUI.backgroundColor = AudioManagerEditorUtil.Red;
                             if (GUILayout.Button("-", GUILayout.Width(30f)))
                             {
                                 RemoveElement(i);
+                                continue;
                             }
 
-                            GUI.backgroundColor = Color.white;
+                            GUI.backgroundColor = normalBgCol;
+                        }
+                        else
+                        {
+                            GUI.backgroundColor = AudioManagerEditorUtil.Hidden;
+                            GUILayout.Button(" ",GUILayout.Width(30f));
+                            GUI.backgroundColor = normalBgCol;
                         }
                         
                         EditorGUILayout.EndHorizontal();
                      
 
-                        if (dropDownBools.GetArrayElementAtIndex(i).boolValue)
+                        if (show.boolValue)
                         {
                             EditorGUILayout.BeginVertical();
+                            GUILayout.Space(7.5f);
 
-                            clipStrings.GetArrayElementAtIndex(i).stringValue =
-                                EditorGUILayout.TextField("Clip Name:",
-                                    clipStrings.GetArrayElementAtIndex(i).stringValue);
+                            EditorGUILayout.PropertyField(clipName);
+                            EditorGUILayout.PropertyField(volume);
+                            EditorGUILayout.PropertyField(pitch);
 
-                            var volMin = 0f;
-                            var volMax = 1f;
-
-                            
-                            EditorGUI.BeginChangeCheck();
-                            EditorGUILayout.MinMaxSlider(new GUIContent("Volume: "),ref volMin, ref volMax, .85f, 1f);
-                            if (EditorGUI.EndChangeCheck())
-                            {
-                                clipVolume.GetArrayElementAtIndex(i).floatValue = Random.Range(volMin, volMax);
-                            }
-
-                            clipPitch.GetArrayElementAtIndex(i).floatValue =
-                                EditorGUILayout.FloatField("Pitch:", clipPitch.GetArrayElementAtIndex(i).floatValue);
 
                             EditorGUILayout.Space();
 
                             EditorGUI.indentLevel++;
-
-                            dropDownOptionals.GetArrayElementAtIndex(i).boolValue = EditorGUILayout.Foldout(
-                                dropDownOptionals.GetArrayElementAtIndex(i).boolValue, "Optional",
-                                EditorStyles.boldFont);
-
+                            showOptional.boolValue = EditorGUILayout.Foldout(showOptional.boolValue, "Optional", EditorStyles.boldFont);
                             EditorGUI.indentLevel--;
                             
-                            if (dropDownOptionals.GetArrayElementAtIndex(i).boolValue)
+                            if (showOptional.boolValue)
                             {
-                                clipTimes.GetArrayElementAtIndex(i).floatValue =
-                                    EditorGUILayout.FloatField("Play From Time:",
-                                        clipTimes.GetArrayElementAtIndex(i).floatValue);
-
-                                clipDelays.GetArrayElementAtIndex(i).floatValue =
-                                    EditorGUILayout.FloatField("Play With Delay:",
-                                        clipDelays.GetArrayElementAtIndex(i).floatValue);
+                                EditorGUILayout.PropertyField(fromTime);
+                                EditorGUILayout.PropertyField(clipDelay);
                             }
-
-                            EditorGUILayout.Space();
-
-                            EditorGUILayout.BeginHorizontal();
-                            GUILayout.FlexibleSpace();
-
-
-
-                            GUILayout.FlexibleSpace();
-                            EditorGUILayout.EndHorizontal();
+                            
                             EditorGUILayout.EndVertical();
                         }
                         
                         GUILayout.Space(2.5f);
                         EditorGUILayout.EndVertical();
                     }
+                    
+                    EditorGUILayout.EndScrollView();
                 }
                 else
                 {
-                    clipStrings.InsertArrayElementAtIndex(0);
-                    clipVolume.InsertArrayElementAtIndex(0);
-                    clipPitch.InsertArrayElementAtIndex(0);
-                    clipTimes.InsertArrayElementAtIndex(0);
-                    clipDelays.InsertArrayElementAtIndex(0);
-                    dropDownBools.InsertArrayElementAtIndex(0);
-                    dropDownOptionals.InsertArrayElementAtIndex(0);
-
-                    clipVolume.GetArrayElementAtIndex(0).floatValue = 1f;
-                    clipPitch.GetArrayElementAtIndex(0).floatValue = 1f;
-                    dropDownBools.GetArrayElementAtIndex(0).boolValue = true;
+                    clipsToPlay.InsertArrayElementAtIndex(0);
+                    clipsToPlay.GetArrayElementAtIndex(0).FindPropertyRelative("show").boolValue = true;
                 }
                 
-                GUILayout.Space(5f);
+                GUILayout.Space(2.5f);
                 EditorGUILayout.EndVertical();
             }
-
-
-
+            
+            
             serializedObject.ApplyModifiedProperties();
             serializedObject.Update();
+        }
+        
+        
+        
+        private void DrawScriptSection()
+        {
+            GUILayout.Space(4.5f);
+            EditorGUILayout.BeginVertical("HelpBox");
+            GUILayout.Space(1.5f);
+            
+            GUI.enabled = false;
+            EditorGUILayout.ObjectField("Script:", MonoScript.FromMonoBehaviour(target as AudioPlayer), typeof(AudioPlayer), false);
+            GUI.enabled = true;
+            
+            GUILayout.Space(1.5f);
+            EditorGUILayout.EndVertical();
         }
 
 
@@ -237,18 +227,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         /// <param name="i">Int | The element for the </param>
         private void AddNewElement(int i)
         {
-            clipStrings.InsertArrayElementAtIndex(i);
-            clipVolume.InsertArrayElementAtIndex(i);
-            clipPitch.InsertArrayElementAtIndex(i);
-            clipTimes.InsertArrayElementAtIndex(i);
-            clipDelays.InsertArrayElementAtIndex(i);
-            dropDownBools.InsertArrayElementAtIndex(i);
-            dropDownOptionals.InsertArrayElementAtIndex(i);
-
-            clipStrings.GetArrayElementAtIndex(i).stringValue = string.Empty;
-            clipVolume.GetArrayElementAtIndex(i).floatValue = 1f;
-            clipPitch.GetArrayElementAtIndex(i).floatValue = 1f;
-            dropDownBools.GetArrayElementAtIndex(i).boolValue = true;
+            clipsToPlay.InsertArrayElementAtIndex(i);
+            clipsToPlay.GetArrayElementAtIndex(i).FindPropertyRelative("clipName").stringValue = string.Empty;
+            clipsToPlay.GetArrayElementAtIndex(i).FindPropertyRelative("show").boolValue = true;
         }
 
 
@@ -259,20 +240,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         /// <param name="i">Int | The element to remove...</param>
         private void RemoveElement(int i)
         {
-            clipStrings.DeleteArrayElementAtIndex(i);
-            clipVolume.DeleteArrayElementAtIndex(i);
-            clipPitch.DeleteArrayElementAtIndex(i);
-            clipTimes.DeleteArrayElementAtIndex(i);
-            clipDelays.DeleteArrayElementAtIndex(i);
-            dropDownBools.DeleteArrayElementAtIndex(i);
-            dropDownOptionals.DeleteArrayElementAtIndex(i);
-        }
-        
-        
-        // JTools Bit
-        private float TextWidth(string text)
-        {
-            return GUI.skin.label.CalcSize(new GUIContent(text)).x;
+            clipsToPlay.DeleteArrayElementAtIndex(i);
+            clipsToPlay.serializedObject.ApplyModifiedProperties();
+            clipsToPlay.serializedObject.Update();
         }
     }
 }

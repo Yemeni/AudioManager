@@ -209,9 +209,9 @@ namespace CarterGames.Assets.AudioManager.Editor
 
             // Shows either the Carter Games Logo or an alternative for if the icon is deleted/not included when you import the package
             // Note: if you are using an older version of the asset, the directory/name of the logo may not match this and therefore will display the text title only
-            if (SpeakerLogo)
+            if (scriptName.Contains("Music") ? MusicLogo : SpeakerLogo)
             {
-                if (GUILayout.Button(SpeakerLogo, GUIStyle.none, GUILayout.Width(50), GUILayout.Height(50)))
+                if (GUILayout.Button(scriptName.Contains("Music") ? MusicLogo : SpeakerLogo, GUIStyle.none, GUILayout.Width(50), GUILayout.Height(50)))
                 {
                     GUI.FocusControl(null);
                 }

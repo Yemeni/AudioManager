@@ -85,113 +85,102 @@ namespace CarterGames.Assets.AudioManager.Editor
             AudioManagerEditorUtil.Header("Music Player");
             AudioSourceSetup();
 
-
-            EditorGUILayout.BeginVertical("Box");
-            GUILayout.Space(5f);
-
-            GUI.contentColor = amRedCol;
-            EditorGUILayout.BeginHorizontal();
+            
+            DrawScriptSection();
+            
+            GUILayout.Space(2.5f);
+            
+            EditorGUILayout.BeginVertical("HelpBox");
+            GUILayout.Space(2.5f);
+            
             EditorGUILayout.LabelField("Track Info", EditorStyles.boldLabel, GUILayout.MaxWidth(92f));
-            EditorGUILayout.EndHorizontal();
-            GUI.contentColor = Color.white;
 
-            GUILayout.Space(5f);
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Track To Play:", GUILayout.MaxWidth(140f));
-            EditorGUILayout.PropertyField(musicTrack, GUIContent.none);
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Music Audio Mixer:", GUILayout.MaxWidth(140f));
-            EditorGUILayout.PropertyField(mixer, GUIContent.none);
-            EditorGUILayout.EndHorizontal();
-
-            GUILayout.Space(5f);
+            GUILayout.Space(2.5f);
             
+            EditorGUILayout.PropertyField(musicTrack, new GUIContent("Track To Play:"));
+            EditorGUILayout.PropertyField(mixer, new GUIContent("Music Audio Mixer"));
+
+            GUILayout.Space(2.5f);
             EditorGUILayout.EndVertical();
-            EditorGUILayout.BeginVertical("Box");
             
-            GUILayout.Space(5f);
-
-            GUI.contentColor = amRedCol;
-            EditorGUILayout.BeginHorizontal();
+            //
+            //
+            //
+            //
+            //
+            
+            GUILayout.Space(2.5f);
+            
+            //
+            //
+            //
+            //
+            //
+            
+            EditorGUILayout.BeginVertical("HelpBox");
+            GUILayout.Space(2.5f);
+            
             EditorGUILayout.LabelField("First Play Setup", EditorStyles.boldLabel, GUILayout.MaxWidth(125f));
-            EditorGUILayout.EndHorizontal();
-            GUI.contentColor = Color.white;
-            
-            GUILayout.Space(5f);
-            
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Play On Awake:", GUILayout.MaxWidth(140f));
-            EditorGUILayout.PropertyField(playOnAwake, GUIContent.none);
-            EditorGUILayout.EndHorizontal();
-            
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Intro Transition:", GUILayout.MaxWidth(140f));
-            EditorGUILayout.PropertyField(musicIntroTransition, GUIContent.none);
-            EditorGUILayout.EndHorizontal();
-            
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Transition Length:", GUILayout.MaxWidth(140f));
-            EditorGUILayout.PropertyField(transitionLength, GUIContent.none);
-            EditorGUILayout.EndHorizontal();
-            
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Track Volume:", GUILayout.MaxWidth(140f));
-            volume.floatValue = EditorGUILayout.Slider(volume.floatValue, 0f, 1f);
-            EditorGUILayout.EndHorizontal();
-            
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Track Pitch:", GUILayout.MaxWidth(140f));
-            EditorGUILayout.PropertyField(pitch, GUIContent.none);
-            EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Should Loop Track:", GUILayout.MaxWidth(140f));
-            EditorGUILayout.PropertyField(shouldLoop, GUIContent.none);
-            EditorGUILayout.EndHorizontal();
+            GUILayout.Space(2.5f);
             
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Start Track At:", GUILayout.MaxWidth(140f));
-            EditorGUILayout.PropertyField(timeToStartFrom, GUIContent.none);
-            EditorGUILayout.EndHorizontal();
-            
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Loop Track At:", GUILayout.MaxWidth(140f));
-            EditorGUILayout.PropertyField(timeToLoopAt, GUIContent.none);
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.PropertyField(playOnAwake, new GUIContent("Play On Awake:"));
+            EditorGUILayout.PropertyField(musicIntroTransition, new GUIContent("Intro Transition:"));
+            EditorGUILayout.PropertyField(transitionLength, new GUIContent("Transition Length:"));
+            volume.floatValue = EditorGUILayout.Slider( new GUIContent("Track Volume:"), volume.floatValue, 0f, 1f);
+            pitch.floatValue = EditorGUILayout.Slider( new GUIContent("Track Pitch:"), pitch.floatValue, 0f, 1f);
+            EditorGUILayout.PropertyField(shouldLoop, new GUIContent("Should Loop Track:"));
+            EditorGUILayout.PropertyField(timeToStartFrom, new GUIContent("Start Track At:"));
+            EditorGUILayout.PropertyField(timeToLoopAt, new GUIContent("Loop Track At:"));
 
-            GUILayout.Space(7.5f);
+            GUILayout.Space(2.5f);
+            EditorGUILayout.EndVertical();
+            
+            //
+            //
+            //
+            //
+            //
+            
+            GUILayout.Space(2.5f);
+            
+            //
+            //
+            //
+            //
+            //
+            
+            EditorGUILayout.BeginVertical("HelpBox");
+            GUILayout.Space(2.5f);
             
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             if (!showSource.boolValue)
             {
-                GUI.backgroundColor = greenCol;
+                GUI.backgroundColor = AudioManagerEditorUtil.Green;
                 if (GUILayout.Button("Show Audio Sources", GUILayout.Width(140f)))
                 {
                     player.GetComponents<AudioSource>()[0].hideFlags = HideFlags.None;
                     player.GetComponents<AudioSource>()[1].hideFlags = HideFlags.None;
                     showSource.boolValue = true;
                 }
-                GUI.backgroundColor = Color.white;
+                GUI.backgroundColor = normalBgCol;
             }
             else
             {
-                GUI.backgroundColor = redCol;
+                GUI.backgroundColor = AudioManagerEditorUtil.Red;
                 if (GUILayout.Button("Hide Audio Sources", GUILayout.Width(140f)))
                 {
                     player.GetComponents<AudioSource>()[0].hideFlags = HideFlags.HideInInspector;
                     player.GetComponents<AudioSource>()[1].hideFlags = HideFlags.HideInInspector;
                     showSource.boolValue = false;
                 }
-                GUI.backgroundColor = Color.white;
+                GUI.backgroundColor = normalBgCol;
             }
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
 
-            GUILayout.Space(5f);
+            GUILayout.Space(2.5f);
             EditorGUILayout.EndVertical();
 
 
@@ -199,67 +188,18 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
 
         
-        /// <summary>
-        /// Shows the header info including logo, asset name and documentation/discord buttons.
-        /// </summary>
-        private void HeaderDisplay()
+        private void DrawScriptSection()
         {
-            GUILayout.Space(10f);
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            // Shows either the Carter Games Logo or an alternative for if the icon is deleted/not included when you import the package
-            // Note: if you are using an older version of the asset, the directory/name of the logo may not match this and therefore will display the text title only
-            if (Resources.Load<Texture2D>("LogoAM"))
-            {
-                if (GUILayout.Button(Resources.Load<Texture2D>("LogoAM"), GUIStyle.none, GUILayout.Width(50), GUILayout.Height(50)))
-                {
-                    GUI.FocusControl(null);
-                }
-            }
-
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.EndHorizontal();
-
-            GUILayout.Space(5f);
-
-            // Label that shows the name of the script / tool & the Version number for user reference sake.
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.LabelField("Music Player", EditorStyles.boldLabel, GUILayout.Width(TextWidth("Music Player   ")));
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.LabelField("Version: 2.5.4", GUILayout.Width(TextWidth("Version 2.5.4  ")));
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.EndHorizontal();
-
-            GUILayout.Space(2.5f);
-
-            // Links to the docs and discord server for the user to access quickly if needed.
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Docs", GUILayout.Width(45f)))
-            {
-                Application.OpenURL("https://carter.games/audiomanager");
-            }
-            GUI.backgroundColor = Color.cyan;
-            if (GUILayout.Button("Discord", GUILayout.Width(65f)))
-            {
-                Application.OpenURL("https://carter.games/discord");
-            }
-            GUI.backgroundColor = redCol;
-            if (GUILayout.Button("Report Issue", GUILayout.Width(100f)))
-            {
-                Application.OpenURL("https://carter.games/report");
-            }
-            GUI.backgroundColor = Color.white;
-            GUILayout.FlexibleSpace();
-            EditorGUILayout.EndHorizontal();
+            GUILayout.Space(4.5f);
+            EditorGUILayout.BeginVertical("HelpBox");
+            GUILayout.Space(1.5f);
             
-            GUILayout.Space(10f);
+            GUI.enabled = false;
+            EditorGUILayout.ObjectField("Script:", MonoScript.FromMonoBehaviour(target as MusicPlayer), typeof(MusicPlayer), false);
+            GUI.enabled = true;
+            
+            GUILayout.Space(1.5f);
+            EditorGUILayout.EndVertical();
         }
 
 
@@ -274,14 +214,6 @@ namespace CarterGames.Assets.AudioManager.Editor
             player.gameObject.GetComponents<AudioSource>()[0].hideFlags = HideFlags.HideInInspector;
             player.gameObject.GetComponents<AudioSource>()[1].hideFlags = HideFlags.HideInInspector;
             player.gameObject.GetComponents<AudioSource>()[1].playOnAwake = false;
-        }
-        
-        
-        
-        // JTools Bit
-        private float TextWidth(string text)
-        {
-            return GUI.skin.label.CalcSize(new GUIContent(text)).x;
         }
     }
 }

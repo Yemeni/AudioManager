@@ -1,24 +1,4 @@
-﻿/*
- * 
- *  Audio Manager
- *							  
- *	Audio Player Script
- *      A script to play allow sounds to be played on any event using the Audio Manager asset. 		
- *			
- *  Written by:
- *      Jonathan Carter
- *
- *  Published By:
- *      Carter Games
- *      E: hello@carter.games
- *      W: https://www.carter.games
- *		
- *  Version: 2.5.8
- *	Last Updated: 18/06/2022 (d/m/y)									
- * 
- */
-
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Audio;
 
@@ -34,23 +14,16 @@ namespace CarterGames.Assets.AudioManager
         [SerializeField] private AudioMixerGroup mixer = default;
         
         // Used to define what the script will play xD
-        [SerializeField] private List<string> clipsToPlay = default;
-        [SerializeField] private List<float> clipsVolume = default;
-        [SerializeField] private List<float> clipsPitch = default;
-        [SerializeField] private List<float> clipsFromTime = default;
-        [SerializeField] private List<float> clipsWithDelay = default;
-        
-        // Used in the editor code to make the custom inspector work xD
-        [SerializeField] private List<bool> dropDowns;
-        [SerializeField] private List<bool> dropDownsOptional;
-        
+        [SerializeField] private List<AudioPlayerData> clipsToPlay = default;
+        [SerializeField] private Vector2 scrollPos;
+
         // An instance of the library to use in the 
         private Dictionary<string, AudioClip> lib;
         private AudioManager am;
         
         
 
-        private void Awake()
+        private void Start()
         {
 #if Use_CGAudioManager_Static || USE_CG_AM_STATIC
             am = AudioManager.instance;
@@ -65,12 +38,6 @@ namespace CarterGames.Assets.AudioManager
         }
 
 
-        // Legit only here so you can disable the script in the inspector xD
-        private void Start()
-        {
-        }
-
-
         /// <summary>
         /// Plays the clip(s) selected in the inspector as they are with the volume/pitch/mixer from the inspector.
         /// </summary>
@@ -80,7 +47,7 @@ namespace CarterGames.Assets.AudioManager
             {
                 for (int i = 0; i < clipsToPlay.Count; i++)
                 {
-                    if (lib.ContainsKey(clipsToPlay[i]))
+                    if (lib.ContainsKey(clipsToPlay[i].clipName))
                     {
                         AudioSource _clip;
 
@@ -101,25 +68,26 @@ namespace CarterGames.Assets.AudioManager
                         var _source = _clip.GetComponent<AudioSource>();
                         var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
 
-                        _source.clip = lib[clipsToPlay[i]];
-                        _source.volume = clipsVolume[i];
-                        _source.pitch = clipsPitch[i];
+                        _source.clip = lib[clipsToPlay[i].clipName];
+                        // _source.volume = clipsVolume[i];
+                        // _source.pitch = clipsPitch[i];
 
-                        if (clipsFromTime[i] > 0)
-                            _source.time = clipsFromTime[i];
+                        if (clipsToPlay[i].fromTime > 0)
+                            _source.time = clipsToPlay[i].fromTime;
 
                         _source.outputAudioMixerGroup = mixer;
                         
-                        if (clipsWithDelay[i] > 0)
-                            _source.PlayDelayed(clipsWithDelay[i]);
+                        if (clipsToPlay[i].clipDelay > 0)
+                            _source.PlayDelayed(clipsToPlay[i].clipDelay);
                         else
                             _source.Play();
                         
                         _audioRemoval.Cleanup(_source.clip.length);
                     }
                     else
-                        Debug.LogWarning(
-                            "<color=#E77A7A><b>Audio Manager</b></color> | Audio Player | <color=#D6BA64>Warning Code 1</color> | Could not find clip. Please ensure the clip is scanned and the string you entered is correct (Note the input is CaSe SeNsItIvE).");
+                    {
+                        AmLog.Warning("Could not find clip. Please ensure the clip is scanned and the string you entered is correct (Note the input is CaSe SeNsItIvE).");
+                    }
                 }
             }
         }

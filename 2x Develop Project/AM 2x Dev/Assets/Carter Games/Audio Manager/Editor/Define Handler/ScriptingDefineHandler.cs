@@ -54,7 +54,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             }
         }
 
-        private static void RemoveScriptingDefine(string define, params BuildTarget[] buildTargets)
+        public static void RemoveScriptingDefine(string define, params BuildTarget[] buildTargets)
         {
             if (buildTargets == null) return;
 
@@ -77,7 +77,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             if (!AudioManagerEditorUtil.Settings.isUsingStatic) return;
             if (!IsScriptingDefinePresent(AssetDefinitions[0], EditorUserBuildSettings.activeBuildTarget)) return; 
             if (!IsScriptingDefinePresent(AssetDefinitions[1], EditorUserBuildSettings.activeBuildTarget)) return;
-            
+            AddScriptingDefine(AssetDefinitions[1]);
         }
     }
 }
