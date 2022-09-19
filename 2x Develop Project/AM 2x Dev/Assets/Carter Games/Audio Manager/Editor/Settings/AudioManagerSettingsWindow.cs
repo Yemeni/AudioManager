@@ -1,0 +1,185 @@
+﻿using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
+
+namespace CarterGames.Assets.AudioManager.Editor
+{
+    public class AudioManagerSettingsWindow : EditorWindow
+    {
+        private static SettingsProvider Provider;
+        private static SerializedObject settingsAssetObject;
+        private static bool ListeningToEvents;
+        private static int directoryIndex;
+
+
+        private static SerializedObject SettingsAssetObject
+        {
+            get
+            {
+                if (settingsAssetObject != null) return settingsAssetObject;
+                settingsAssetObject = new SerializedObject(AudioManagerEditorUtil.Settings);
+                return settingsAssetObject;
+            }
+        }
+
+
+        [SettingsProvider]
+        public static SettingsProvider MultiSceneSettingsDrawer()
+        {
+            var provider = new SettingsProvider(AudioManagerEditorUtil.SettingsWindowPath, SettingsScope.Project)
+            {
+                guiHandler = (searchContext) =>
+                {
+                    if (!AudioManagerEditorUtil.HasSettingsFile) return;
+
+                    DrawHeader();
+                    DrawInfo();
+                    
+                    EditorGUILayout.BeginVertical("HelpBox");
+                    GUILayout.Space(1.5f);
+            
+                    EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
+                    GUILayout.Space(1.5f);
+                    
+                    EditorGUI.BeginChangeCheck();
+                    
+                    DrawSettings();
+                    
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        // Debug.LogError("Setting Edit...");
+                        // SettingsAssetObject.ApplyModifiedProperties();
+                        // SettingsAssetObject.Update();
+                        // MultiSceneEditorEvents.Settings.OnSettingChanged.Raise();
+                    }
+
+                    GUILayout.Space(2.5f);
+                    EditorGUILayout.EndVertical();
+                    
+                    DrawButtons();
+                },
+                
+                keywords = new HashSet<string>(new[] { "Carter Games", "External Assets", "Tools", "Audio Manager", "Audio", "Audio Management", "Music", "Sound" })
+            };
+            
+            return provider;
+        }
+
+
+        /// <summary>
+        /// Draws the default Banner Logo header for the asset...
+        /// </summary>
+        public static void DrawHeader()
+        {
+            var managerHeader = AudioManagerEditorUtil.ManagerHeader;
+            
+            GUILayout.Space(5f);
+                    
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+                    
+            if (managerHeader != null)
+            {
+                if (GUILayout.Button(managerHeader, GUIStyle.none, GUILayout.MaxHeight(110)))
+                {
+                    GUI.FocusControl(null);
+                }
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+                    
+            GUILayout.Space(5f);
+        }
+        
+        
+        
+        private static void DrawInfo()
+        {
+            EditorGUILayout.BeginVertical("HelpBox");
+            GUILayout.Space(1.5f);
+            
+            EditorGUILayout.LabelField("Info", EditorStyles.boldLabel);
+            
+            EditorGUILayout.HelpBox("NOTE: 2.6.x will be the last version in the 2.x line. This version will be supported for 3 years after the release of the next version (3.x) with bug fixes & QOL updates only.", MessageType.Info);
+
+            EditorGUILayout.LabelField(new GUIContent("Version", "The version of the asset in use."),  new GUIContent(AssetVersionData.VersionNumber));
+            EditorGUILayout.LabelField(new GUIContent("Release Date", "The date this version of the asset was published on."), new GUIContent(AssetVersionData.ReleaseDate));
+
+            GUILayout.Space(2.5f);
+            EditorGUILayout.EndVertical();
+        }
+
+
+
+        private static void DrawSettings()
+        {
+            EditorGUI.BeginChangeCheck();
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Base Scan Path ", GUILayout.Width(150));
+            SettingsAssetObject.FindProperty("baseAudioScanPath").stringValue = DirectorySelectHelper.ConvertIntToDir(EditorGUILayout.Popup(DirectorySelectHelper.ConvertStringToIndex(SettingsAssetObject.FindProperty("baseAudioScanPath").stringValue), DirectorySelectHelper.GetAllDirectories().ToArray()));
+            EditorGUILayout.EndHorizontal();
+            
+            if (EditorGUI.EndChangeCheck())
+            {
+                SettingsAssetObject.ApplyModifiedProperties();
+            }
+            
+            GUI.enabled = false;
+            EditorGUILayout.PropertyField(SettingsAssetObject.FindProperty("isUsingStatic"));
+            GUI.enabled = true;
+            
+            EditorGUILayout.PropertyField(SettingsAssetObject.FindProperty("showDebugMessages"));
+        }
+
+
+        private static void DrawButtons()
+        {
+            EditorGUILayout.BeginHorizontal();
+            
+            if (GUILayout.Button("Asset Store", GUILayout.Height(30), GUILayout.MinWidth(100)))
+                Application.OpenURL("https://assetstore.unity.com/packages/tools/audio/audio-manager-cg-149123");
+            
+            if (GUILayout.Button("GitHub", GUILayout.Height(30), GUILayout.MinWidth(100)))
+                Application.OpenURL("https://github.com/CarterGames/AudioManager");
+
+            if (GUILayout.Button("Documentation", GUILayout.Height(30), GUILayout.MinWidth(100)))
+                Application.OpenURL("https://carter.games/audiomanager");
+
+            if (GUILayout.Button("Change Log", GUILayout.Height(30), GUILayout.MinWidth(100)))
+                Application.OpenURL("https://carter.games/audiomanager/changelog");
+
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Email", GUILayout.Height(30), GUILayout.MinWidth(100)))
+                Application.OpenURL("mailto:support@carter.games?subject=Audio Manager Asset Enquiry");
+
+            if (GUILayout.Button("Discord", GUILayout.Height(30), GUILayout.MinWidth(100)))
+                Application.OpenURL("https://carter.games/discord");
+
+            if (GUILayout.Button("Report Issues", GUILayout.Height(30), GUILayout.MinWidth(100)))
+                Application.OpenURL("https://carter.games/report");
+
+            EditorGUILayout.EndHorizontal();
+
+            if (AudioManagerEditorUtil.CarterGamesBanner != null)
+            {
+                var defaultTextColour = GUI.contentColor;
+                GUI.contentColor = new Color(1, 1, 1, .75f);
+            
+                if (GUILayout.Button(AudioManagerEditorUtil.CarterGamesBanner, GUILayout.MaxHeight(40)))
+                    Application.OpenURL("https://carter.games");
+            
+                GUI.contentColor = defaultTextColour;
+            }
+            else
+            {
+                if (GUILayout.Button("Carter Games", GUILayout.MaxHeight(40)))
+                    Application.OpenURL("https://carter.games");
+            }
+        }
+    }
+}

@@ -1,30 +1,12 @@
-Skip to content
-Search or jump to…
-Pull requests
-Issues
-Marketplace
-Explore
- 
-@JonathanMCarter 
-CarterGames
-/
-AudioManager
-Public
-Code
-Issues
-Pull requests
-Security
-Insights
-Settings
-AudioManager/.gitignore
-@JonathanMCarter
-JonathanMCarter 3.x.x Project WIP + .gitignore update
-Latest commit a52a416 on 18 Jun
- History
- 1 contributor
-63 lines (51 sloc)  1010 Bytes
-
 Audio Manager Release Project
+
+*2x Develop Project/Am 2x Dev/[Ll]ibrary/
+*2x Develop Project/Am 2x Dev/[Tt]emp/
+*2x Develop Project/Am 2x Dev/[Oo]bj/
+*2x Develop Project/Am 2x Dev/[Bb]uild/
+*2x Develop Project/Am 2x Dev/[Bb]uilds/
+*2x Develop Project/Am 2x Dev/[Ll]ogs/
+*2x Develop Project/Am 2x Dev/[Mm]emoryCaptures/
 
 # This .gitignore file should be placed at the root of your Unity project directory
 #
@@ -101,3 +83,5 @@ API
 Training
 Blog
 About
+2x Develop Project/AM 2x Dev/Assets/Carter Games/Audio Manager/Demo/Audio/Cloistered Vinyl.wav
+*.wav
