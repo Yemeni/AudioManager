@@ -204,7 +204,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                 return;
             }
 
-            var options = DirectorySelectHelper.GetDirectoriesFromBase();
+            var options = DirectorySelectHelper.GetDirectoriesFromBase(false);
             
             for (var i = 0; i < directories.arraySize; i++)
             {

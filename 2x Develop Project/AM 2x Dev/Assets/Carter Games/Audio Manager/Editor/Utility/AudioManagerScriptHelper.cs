@@ -8,6 +8,9 @@ namespace CarterGames.Assets.AudioManager.Editor
 {
     public static class AudioManagerScriptHelper
     {
+        private static bool shouldUpdateDirectories;
+        
+        
         /// <summary>
         /// Checks to see how many files are found from the scan so it can be displayed.
         /// </summary>
@@ -160,7 +163,8 @@ namespace CarterGames.Assets.AudioManager.Editor
         public static void DirectoriesDisplay(SerializedProperty fileDirs)
         {
             var defaultCol = GUI.backgroundColor;
-            var options = DirectorySelectHelper.GetDirectoriesFromBase();
+            var options = DirectorySelectHelper.GetDirectoriesFromBase(shouldUpdateDirectories);
+            shouldUpdateDirectories = false;
             
             if (fileDirs.arraySize <= 0) return;
             for (var i = 0; i < fileDirs.arraySize; i++)
@@ -179,6 +183,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                 fileDirs.GetArrayElementAtIndex(i).stringValue = DirectorySelectHelper.ConvertIntToDir(EditorGUILayout.Popup(DirectorySelectHelper.ConvertStringToIndex(fileDirs.GetArrayElementAtIndex(i).stringValue, options), options.ToArray()), options);
                 if (EditorGUI.EndChangeCheck())
                 {
+                    shouldUpdateDirectories = true;
                     fileDirs.serializedObject.ApplyModifiedProperties();
                     fileDirs.serializedObject.Update();
                 }
@@ -188,11 +193,15 @@ namespace CarterGames.Assets.AudioManager.Editor
                 {
                     GUI.backgroundColor = AudioManagerEditorUtil.Green;
 
+                    EditorGUI.BeginChangeCheck();
                     if (GUILayout.Button("+", GUILayout.Width(25)))
                         fileDirs.InsertArrayElementAtIndex(i);
-
-                    fileDirs.serializedObject.ApplyModifiedProperties();
-                    fileDirs.serializedObject.Update();
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        shouldUpdateDirectories = true;
+                        fileDirs.serializedObject.ApplyModifiedProperties();
+                        fileDirs.serializedObject.Update();
+                    }
                 }
 
                 GUI.backgroundColor = defaultCol;
@@ -201,11 +210,15 @@ namespace CarterGames.Assets.AudioManager.Editor
                 {
                     GUI.backgroundColor = AudioManagerEditorUtil.Red;
 
+                    EditorGUI.BeginChangeCheck();
                     if (GUILayout.Button("-", GUILayout.Width(25)))
                         fileDirs.DeleteArrayElementAtIndex(i);
-                    
-                    fileDirs.serializedObject.ApplyModifiedProperties();
-                    fileDirs.serializedObject.Update();
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        shouldUpdateDirectories = true;
+                        fileDirs.serializedObject.ApplyModifiedProperties();
+                        fileDirs.serializedObject.Update();
+                    }
                 }
                 else
                 {

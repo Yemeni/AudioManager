@@ -47,10 +47,8 @@ namespace CarterGames.Assets.AudioManager.Editor
                     
                     if (EditorGUI.EndChangeCheck())
                     {
-                        // Debug.LogError("Setting Edit...");
-                        // SettingsAssetObject.ApplyModifiedProperties();
-                        // SettingsAssetObject.Update();
-                        // MultiSceneEditorEvents.Settings.OnSettingChanged.Raise();
+                        SettingsAssetObject.ApplyModifiedProperties();
+                        SettingsAssetObject.Update();
                     }
 
                     GUILayout.Space(2.5f);
@@ -119,6 +117,12 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Base Scan Path ", GUILayout.Width(150));
             SettingsAssetObject.FindProperty("baseAudioScanPath").stringValue = DirectorySelectHelper.ConvertIntToDir(EditorGUILayout.Popup(DirectorySelectHelper.ConvertStringToIndex(SettingsAssetObject.FindProperty("baseAudioScanPath").stringValue), DirectorySelectHelper.GetAllDirectories().ToArray()));
+
+            if (GUILayout.Button("Refresh", GUILayout.Width(100)))
+            {
+                DirectorySelectHelper.RefreshAllDirectories();
+            }
+            
             EditorGUILayout.EndHorizontal();
             
             if (EditorGUI.EndChangeCheck())
