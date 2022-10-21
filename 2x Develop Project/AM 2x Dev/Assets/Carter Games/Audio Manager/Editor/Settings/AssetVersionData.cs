@@ -1,7 +1,7 @@
 ﻿namespace CarterGames.Assets.AudioManager.Editor
 {
     /// <summary>
-    /// Contains details for the asset...
+    /// Contains details for the asset to show in inspectors.
     /// </summary>
     public static class AssetVersionData
     {
@@ -14,6 +14,6 @@
         /// <summary>
         /// The date this release of the asset was submitted for release...
         /// </summary>
-        public static string ReleaseDate => "TBC";
+        public static string ReleaseDate => "21/10/2022";
     }
 }

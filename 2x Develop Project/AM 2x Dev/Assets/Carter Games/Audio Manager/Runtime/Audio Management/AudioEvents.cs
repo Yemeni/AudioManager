@@ -1,28 +1,33 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEngine;
 
-namespace CarterGames.Assets.AudioManager.Editor
+namespace CarterGames.Assets.AudioManager
 {
     /// <summary>
-    /// A patch for 2.6.0 which updates the scripting defines for the static instance when changing build platform.
+    /// Provides some events you can listen to for a clip that is playing or due to play.
     /// </summary>
-    public class StaticInstanceBoolSetup : AssetPostprocessor
+    public class AudioEvents : MonoBehaviour
     {
         /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-        |   Fields
+        |   Events
         ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
-        private static bool _hasRun;
+        /// <summary>
+        /// Called when a clip starts playing...
+        /// </summary>
+        public static event Action OnClipStart;
+        
+        /// <summary>
+        /// Called when a clip finishes playing...
+        /// </summary>
+        public static event Action OnClipEnd;
 
         /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-        |   AssetPostprocessor Implementation
+        |   Unity Methods
         ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
-        private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
-        {
-            if (_hasRun) return;
+        private void OnEnable() => OnClipStart?.Invoke();
 
-            AudioManagerEditorUtil.Settings.isUsingStatic = ScriptingDefineHandler.IsScriptingDefinePresent();
-            _hasRun = true;
-        }
+        private void OnDisable() => OnClipEnd?.Invoke();
     }
 }

@@ -4,25 +4,38 @@ using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager.Editor
 {
+    /// <summary>
+    /// The settings provider window for the asset.
+    /// </summary>
     public class AudioManagerSettingsWindow : EditorWindow
     {
-        private static SettingsProvider Provider;
-        private static SerializedObject settingsAssetObject;
-        private static bool ListeningToEvents;
-        private static int directoryIndex;
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Fields
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
+        private static SettingsProvider _provider;
+        private static SerializedObject _settingsAssetObject;
+        private static bool _listeningToEvents;
+        private static int _directoryIndex;
 
-
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Properties
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
         private static SerializedObject SettingsAssetObject
         {
             get
             {
-                if (settingsAssetObject != null) return settingsAssetObject;
-                settingsAssetObject = new SerializedObject(AudioManagerEditorUtil.Settings);
-                return settingsAssetObject;
+                if (_settingsAssetObject != null) return _settingsAssetObject;
+                _settingsAssetObject = new SerializedObject(AudioManagerEditorUtil.Settings);
+                return _settingsAssetObject;
             }
         }
 
-
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Settings Provider
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
         [SettingsProvider]
         public static SettingsProvider MultiSceneSettingsDrawer()
         {
@@ -63,11 +76,14 @@ namespace CarterGames.Assets.AudioManager.Editor
             return provider;
         }
 
-
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
         /// <summary>
         /// Draws the default Banner Logo header for the asset...
         /// </summary>
-        public static void DrawHeader()
+        private static void DrawHeader()
         {
             var managerHeader = AudioManagerEditorUtil.ManagerHeader;
             
@@ -91,7 +107,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
         
         
-        
+        /// <summary>
+        /// Draws the info section of the settings provider.
+        /// </summary>
         private static void DrawInfo()
         {
             EditorGUILayout.BeginVertical("HelpBox");
@@ -109,7 +127,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
 
 
-
+        /// <summary>
+        /// Draws the settings section of the settings provider.
+        /// </summary>
         private static void DrawSettings()
         {
             EditorGUI.BeginChangeCheck();
@@ -129,7 +149,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             {
                 SettingsAssetObject.ApplyModifiedProperties();
             }
-            
+
             GUI.enabled = false;
             EditorGUILayout.PropertyField(SettingsAssetObject.FindProperty("isUsingStatic"));
             GUI.enabled = true;
@@ -138,6 +158,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
 
 
+        /// <summary>
+        /// Draws the buttons section of the settings provider.
+        /// </summary>
         private static void DrawButtons()
         {
             EditorGUILayout.BeginHorizontal();
@@ -159,7 +182,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginHorizontal();
 
             if (GUILayout.Button("Email", GUILayout.Height(30), GUILayout.MinWidth(100)))
-                Application.OpenURL("mailto:support@carter.games?subject=Audio Manager Asset Enquiry");
+                Application.OpenURL("mailto:hello@carter.games?subject=Audio Manager Asset Enquiry");
 
             if (GUILayout.Button("Discord", GUILayout.Height(30), GUILayout.MinWidth(100)))
                 Application.OpenURL("https://carter.games/discord");

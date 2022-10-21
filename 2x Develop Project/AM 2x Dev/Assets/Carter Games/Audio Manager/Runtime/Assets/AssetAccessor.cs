@@ -4,20 +4,20 @@ using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager
 {
+    /// <summary>
+    /// Accesses the scriptable objects for the asset at runtime.
+    /// </summary>
     public static class AssetAccessor
     {
-        /* 
-        |  Fields
-        */
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Fields
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
-        // a cache of all the assets found...
-        private static AudioManagerAsset[] assets;
-
+        private static AudioManagerAsset[] _assets;
         
-        /* 
-        |  Properties
-        */
-        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Properties
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
         /// <summary>
         /// Gets all the assets from the build versions asset...
@@ -26,17 +26,15 @@ namespace CarterGames.Assets.AudioManager
         {
             get
             {
-                if (assets != null) return assets;
-                assets = Resources.LoadAll("Carter Games/Audio Manager", typeof(AudioManagerAsset)).Cast<AudioManagerAsset>().ToArray();
-                return assets;
+                if (_assets != null) return _assets;
+                _assets = Resources.LoadAll("Carter Games/Audio Manager", typeof(AudioManagerAsset)).Cast<AudioManagerAsset>().ToArray();
+                return _assets;
             }
         }
 
-        
-        /* 
-        |  Methods
-        */
-        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
         /// <summary>
         /// Gets the Build Versions Asset requested...

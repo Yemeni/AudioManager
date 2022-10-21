@@ -11,6 +11,10 @@ namespace CarterGames.Assets.AudioManager.Editor
     [CustomEditor(typeof(AudioManager)), CanEditMultipleObjects]
     public class AudioManagerEditor : UnityEditor.Editor
     {
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Fields
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */   
+        
         private static AudioSource Source;
         private static string[] Names;
         
@@ -18,12 +22,12 @@ namespace CarterGames.Assets.AudioManager.Editor
         private Color normalBackgroundColour;
         private Color normalContentColour;
 
-        private List<AudioClip> audioList;              // List of AudioClips used to add the audio to the library in the Audio Manager Script
-        private List<string> audioStrings;              // List of Strings used to add the names of the audio clips to the library in the Audio Manager Script
+        private List<AudioClip> audioList;
+        private List<string> audioStrings;
 
-        private AudioManager audioManagerScript;        // Reference to the Audio Manager Script that this script overrides the inspector for
+        private AudioManager audioManagerScript;
         
-        private bool isSetup = false;                   // Has the initial setup been completed?
+        private bool isSetup = false;
         private int lastTotal = 0;
         private int totalClipsInFile = 0;
         
@@ -40,7 +44,10 @@ namespace CarterGames.Assets.AudioManager.Editor
 
         private bool hasAmf;
 
-
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Unity Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */   
+        
         /// <summary>
         /// Assigns the script and sets the library up is it is null.
         /// </summary>
@@ -137,8 +144,6 @@ namespace CarterGames.Assets.AudioManager.Editor
 
                             fileLib.ClearArray();
 
-                            Debug.Log("Update Ran");
-
                             for (var i = 0; i < audioList.Count; i++)
                             {
                                 fileLib.InsertArrayElementAtIndex(i);
@@ -175,10 +180,12 @@ namespace CarterGames.Assets.AudioManager.Editor
             serializedObject.ApplyModifiedProperties();
         }
 
-        #region Referencing Setup
-
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Referencing Setup Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */  
+        
         /// <summary>
-        /// Runs the Init setup for the manager if needed....
+        /// Runs the Init setup for the manager if needed.
         /// </summary>
         private void FirstSetup()
         {
@@ -201,6 +208,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
         
         
+        /// <summary>
+        /// Sets up all the references needed for the editor.
+        /// </summary>
         private void ReferenceSetup()
         {
             file = serializedObject.FindProperty("audioManagerFile");
@@ -240,16 +250,25 @@ namespace CarterGames.Assets.AudioManager.Editor
             AssetDatabase.Refresh();
         }
 
+        
+        /// <summary>
+        /// Updates the default colours of the editor that are saved to return the editor to defaults when not changing.
+        /// </summary>
         private void UpdateNormalEditorColours()
         {
             normalColour = GUI.color;
             normalBackgroundColour = GUI.backgroundColor;
             normalContentColour = GUI.contentColor;
         }
-
-        #endregion
         
         
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Draw Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */ 
+        
+        /// <summary>
+        /// Draws the script section of the custom inspector.
+        /// </summary>
         private void DrawScriptSection()
         {
             GUILayout.Space(4.5f);
@@ -265,7 +284,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
 
 
-
+        /// <summary>
+        /// Draws the main management section of the custom inspector.
+        /// </summary>
         private void DrawManagementSection()
         {
             EditorGUILayout.BeginVertical("HelpBox");
@@ -440,7 +461,7 @@ namespace CarterGames.Assets.AudioManager.Editor
 
         
         /// <summary>
-        /// Draws the 
+        /// Draws the directories section of the custom inspector.
         /// </summary>
         private void DrawDirectories()
         {

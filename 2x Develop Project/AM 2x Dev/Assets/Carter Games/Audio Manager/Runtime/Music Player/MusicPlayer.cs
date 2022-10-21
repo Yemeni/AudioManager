@@ -1,21 +1,4 @@
-﻿/*
- * 
- *  Audio Manager
- *							  
- *	Music Player
- *      plays background music and allows transitions between tracks.
- *			
- *  Written by:
- *      Jonathan Carter
- *      E: jonathan@carter.games
- *      W: https://jonathan.carter.games
- *		
- *  Version: 2.5.7
- *	Last Updated: 15/03/2022 (d/m/y)									
- * 
- */
-
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.Audio;
 using System.Collections;
@@ -24,10 +7,14 @@ using System.Linq;
 namespace CarterGames.Assets.AudioManager
 {
     /// <summary>
-    /// MonoBehaviour Class | Static | The Music player, designed to play background music in your game.
+    /// The Music player, designed to play background music in your game.
     /// </summary>
     public class MusicPlayer : MonoBehaviour
     {
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Fields
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */   
+        
         private const string NotAValidTransitionString =
             "<color=#E77A7A><b>Audio Manager</b></color> | Music PLayer | <color=#D6BA64>Warning Code 5</color> Transition chosen was not valid, please select a valid transition to use.";
         
@@ -49,12 +36,16 @@ namespace CarterGames.Assets.AudioManager
         [SerializeField] private TransitionType introTransition;
 
         // Used in editor to show / hide audio source...
-        [SerializeField] private bool showSource;
+        [SerializeField, HideInInspector] private bool showSource;
 
         private float transitionTime = 1f;
         private AudioSource[] sources;
         
 
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Events
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */   
+        
         /// <summary>
         /// Gets invoked whenever a track has started.
         /// </summary>
@@ -85,6 +76,11 @@ namespace CarterGames.Assets.AudioManager
         /// </summary>
         public static MusicPlayer instance;
 
+        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Properties
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */   
+        
         /// <summary>
         /// Gets the track currently being played...
         /// </summary>
@@ -119,7 +115,12 @@ namespace CarterGames.Assets.AudioManager
         /// </summary>
         public bool IsTrackPlaying => GetAudioSource.isPlaying;
 
+        public bool CanPlayMusic { get; private set; } = true;
 
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Unity Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
         private void OnEnable()
         {
             // Instancing Setup...
@@ -143,6 +144,26 @@ namespace CarterGames.Assets.AudioManager
                 TrackEndedCheck();
             else
                 TrackLoopCheck();
+        }
+
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+
+        public void ToggleMusic(bool play)
+        {
+            CanPlayMusic = play;
+
+            if (IsTrackPlaying)
+                PauseTrack();
+            else
+                PlayTrack();
+        }
+
+        
+        private void PauseTrack()
+        {
+            GetAudioSource.Pause();
         }
 
 
@@ -219,6 +240,7 @@ namespace CarterGames.Assets.AudioManager
         /// </summary>
         public void PlayTrack()
         {
+            if (!CanPlayMusic) return;
             GetAudioSource.Play();
         }
 
@@ -239,6 +261,7 @@ namespace CarterGames.Assets.AudioManager
         /// <param name="transitionType">The transition type to perform</param>
         public void PlayTrack(AudioClip track, TransitionType transitionType = TransitionType.None)
         {
+            if (!CanPlayMusic) return;
             ChangeTrackLogic(track, 0, track.length, transitionType);
         }
         
@@ -251,6 +274,7 @@ namespace CarterGames.Assets.AudioManager
         /// <param name="time">The time this transition should take to complete</param>
         public void PlayTrack(AudioClip track, TransitionType transitionType, float time)
         {
+            if (!CanPlayMusic) return;
             transitionTime = SetTransitionLength(time);
             ChangeTrackLogic(track, 0, track.length, transitionType);
         }
@@ -264,6 +288,7 @@ namespace CarterGames.Assets.AudioManager
         /// <param name="transitionType">The transition type to perform</param>
         public void PlayTrack(AudioClip track, float startTime, TransitionType transitionType = TransitionType.None)
         {
+            if (!CanPlayMusic) return;
             ChangeTrackLogic(track, startTime, track.length, transitionType);
         }
         
@@ -277,6 +302,7 @@ namespace CarterGames.Assets.AudioManager
         /// <param name="time">The time this transition should take to complete</param>
         public void PlayTrack(AudioClip track, float startTime, TransitionType transitionType, float time)
         {
+            if (!CanPlayMusic) return;
             transitionTime = SetTransitionLength(time);
             ChangeTrackLogic(track, startTime, track.length, transitionType);
         }
@@ -291,6 +317,7 @@ namespace CarterGames.Assets.AudioManager
         /// <param name="transitionType">The transition type to perform</param>
         public void PlayTrack(AudioClip track, float startTime, float endTime, TransitionType transitionType = TransitionType.None)
         {
+            if (!CanPlayMusic) return;
             ChangeTrackLogic(track, startTime, endTime, transitionType);
         }
         
@@ -305,6 +332,7 @@ namespace CarterGames.Assets.AudioManager
         /// <param name="time">The time this transition should take to complete</param>
         public void PlayTrack(AudioClip track, float startTime, float endTime, TransitionType transitionType, float time)
         {
+            if (!CanPlayMusic) return;
             transitionTime = SetTransitionLength(time);
             ChangeTrackLogic(track, startTime, endTime, transitionType);
         }

@@ -1,28 +1,42 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEngine;
 
-namespace CarterGames.Assets.AudioManager.Editor
+namespace CarterGames.Assets.AudioManager
 {
     /// <summary>
-    /// A patch for 2.6.0 which updates the scripting defines for the static instance when changing build platform.
+    /// Used the store the key/pair values for each clip found in the audio manager scan.
     /// </summary>
-    public class StaticInstanceBoolSetup : AssetPostprocessor
+    [Serializable]
+    public class AudioLibraryData
     {
         /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
         |   Fields
         ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
-        private static bool _hasRun;
+        /// <summary>
+        /// The key for the library entry.
+        /// </summary>
+        public string key;
+        
+        
+        /// <summary>
+        /// The value for the library entry.
+        /// </summary>
+        public AudioClip value;
 
         /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-        |   AssetPostprocessor Implementation
+        |   Constructors
         ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
-        private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
+        /// <summary>
+        /// Creates a new library entry with the entered data.
+        /// </summary>
+        /// <param name="key">The name of the clip.</param>
+        /// <param name="value">The clip itself.</param>
+        public AudioLibraryData(string key, AudioClip value)
         {
-            if (_hasRun) return;
-
-            AudioManagerEditorUtil.Settings.isUsingStatic = ScriptingDefineHandler.IsScriptingDefinePresent();
-            _hasRun = true;
+            this.key = key;
+            this.value = value;
         }
     }
 }

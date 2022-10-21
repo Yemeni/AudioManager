@@ -11,1332 +11,42 @@ namespace CarterGames.Assets.AudioManager
 {
     /// <summary>
     /// The main Audio Manager script used to play audio in your game...
-    /// Instanced version of the class available if enabled in the inspector...
+    /// Static Instanced version of the class available if enabled in the inspector...
     /// </summary>
     [Serializable]
     public class AudioManager : MonoBehaviour
     {
-        // Editor boolean values, not used in this script but needed for the custom inspector possibly....
-        [SerializeField] private bool hasScannedOnce; // Tells the script whether or not the AMF has being scanned before.
-        [SerializeField] private bool shouldShowMixers;
-        [SerializeField] private bool shouldShowDir; // Tells the script whether it should be displaying the directories in the inspector.
-        [SerializeField] private bool shouldShowClips; // Tells the script whether it should be displaying the clips in the inspector.
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Fields
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
+        // Editor boolean values, not used in this script but needed for the custom inspectors to correctly function....
+        [SerializeField, HideInInspector] private bool hasScannedOnce;
+        [SerializeField, HideInInspector] private bool shouldShowMixers;
+        [SerializeField, HideInInspector] private bool shouldShowDir;
+        [SerializeField, HideInInspector] private bool shouldShowClips;
 
-        [SerializeField] private AudioManagerFile audioManagerFile; // The AMF currently in use by this instance of the Audio Manager.
+        [SerializeField] private AudioManagerFile audioManagerFile;
 
         private Dictionary<string, AudioClip> lib;
         private bool canPlayAudio = true;
-
-
+        
 #if Use_CGAudioManager_Static || USE_CG_AM_STATIC
         public static AudioManager instance;
 #endif
         
-        private void OnEnable()
-        {
-#if Use_CGAudioManager_Static || USE_CG_AM_STATIC
-            // Checks and removed instances if extra are present.
-            DontDestroyOnLoad(this);
-
-            if (instance == null)
-                instance = this;
-            else
-                Destroy(gameObject);
-#endif
-        }
-        
-        private void Awake()
-        {
-            // Normal AM setup stuff xD
-            if (audioManagerFile.soundPrefab == null)
-                Debug.LogWarning("<color=#E77A7A><b>Audio Manager</b></color> | <color=#D6BA64>Warning Code 1</color> | Prefab has not been assigned! Please assign a prefab in the inspector before using the manager.");
-            
-            // For the audio source on the script, only used for previewing clips xD
-            GetComponent<AudioSource>().hideFlags = HideFlags.HideInInspector;
-
-            // Sets up the library from the audio manager file in use...
-            lib = new Dictionary<string, AudioClip>();
-            
-            foreach (var _t in audioManagerFile.library)
-            {
-                lib.Add(_t.key, _t.value);
-            }
-
-            canPlayAudio = true;
-
-            if (AudioPool.ExistsInScene) return;
-            var obj = new GameObject("Audio Pool");
-            obj.AddComponent<AudioPool>();
-        }
-        
-
-        /// <summary>
-        /// Play a sound that is scanned into the audio manager.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public void Play(string request, float? volume = 1f, float? pitch = 1f, int? priority = 128, bool? loop = false)
-        {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch, priority, loop);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Properties
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
         /// <summary>
-        /// Play a sound that is scanned into the audio manager.
+        /// Toggles whether or not the manager can play audio....
+        /// This doesn't affect the Music Player....
         /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at | Default = 1.</param>
-        public void Play(string request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        public bool CanPlayAudio
         {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch);
-
-            _source.outputAudioMixerGroup = mixer;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-
-
-        /// <summary>
-        /// Play a sound that is scanned into the audio manager.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at | Default = 1.</param>
-        public void Play(string request, int mixerID, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch);
-
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-
-
-        /// <summary>
-        /// Play a sound that is scanned into the audio manager.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public void Play(string request, Hashtable args)
-        {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source.clip = lib[request];
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.time = 0;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Play a sound that is scanned into the audio manager and returns the audio source for you to check / use as needed.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1.</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1.</param>
-        public AudioSource PlayAndGetSource(string request, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Play a sound that is scanned into the audio manager and returns the audio source for you to check / use as needed.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1.</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1.</param>
-        public AudioSource PlayAndGetSource(string request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch);
-            _source.outputAudioMixerGroup = mixer;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Play a sound that is scanned into the audio manager and returns the audio source for you to check / use as needed.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1.</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1.</param>
-        public AudioSource PlayAndGetSource(string request, int mixerID, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch);
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Play a sound that is scanned into the audio manager and returns the audio source for you to check / use as needed.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public AudioSource PlayAndGetSource(string request, Hashtable args)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source.clip = lib[request];
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.time = 0;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            
-            return _source;
-        }
-        
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public void PlayRange(string[] request, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-
-            for (int i = 0; i < request.Length; i++)
-            {
-                if (!HasClip(request[i])) return;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public void PlayRange(List<string> request, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-
-            for (int i = 0; i < request.Count; i++)
-            {
-                if (!HasClip(request[i])) return;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public void PlayRange(string[] request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-
-            for (int i = 0; i < request.Length; i++)
-            {
-                if (!HasClip(request[i])) return;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
-            _source.outputAudioMixerGroup = mixer;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public void PlayRange(List<string> request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-
-            for (int i = 0; i < request.Count; i++)
-            {
-                if (!HasClip(request[i])) return;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
-            _source.outputAudioMixerGroup = mixer;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public void PlayRange(string[] request, int mixerID, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-
-            for (int i = 0; i < request.Length; i++)
-            {
-                if (!HasClip(request[i])) return;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public void PlayRange(List<string> request, int mixerID, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-
-            for (int i = 0; i < request.Count; i++)
-            {
-                if (!HasClip(request[i])) return;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public void PlayRange(string[] request, Hashtable args)
-        {
-            if (!canPlayAudio) return;
-
-            for (int i = 0; i < request.Length; i++)
-            {
-                if (!HasClip(request[i])) return;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Length)]]);
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public void PlayRange(List<string> request, Hashtable args)
-        {
-            if (!canPlayAudio) return;
-
-            for (int i = 0; i < request.Count; i++)
-            {
-                if (!HasClip(request[i])) return;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Count)]]);
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public AudioSource PlayRangeAndGetSource(string[] request, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-
-            for (int i = 0; i < request.Length; i++)
-            {
-                if (!HasClip(request[i])) return null;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public AudioSource PlayRangeAndGetSource(List<string> request, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-
-            for (int i = 0; i < request.Count; i++)
-            {
-                if (!HasClip(request[i])) return null;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public AudioSource PlayRangeAndGetSource(string[] request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-
-            for (int i = 0; i < request.Length; i++)
-            {
-                if (!HasClip(request[i])) return null;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
-            _source.outputAudioMixerGroup = mixer;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public AudioSource PlayRangeAndGetSource(List<string> request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-
-            for (int i = 0; i < request.Count; i++)
-            {
-                if (!HasClip(request[i])) return null;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
-            _source.outputAudioMixerGroup = mixer;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public AudioSource PlayRangeAndGetSource(string[] request, int mixerID, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-
-            for (int i = 0; i < request.Length; i++)
-            {
-                if (!HasClip(request[i])) return null;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
-        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
-        public AudioSource PlayRangeAndGetSource(List<string> request, int mixerID, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-
-            for (int i = 0; i < request.Count; i++)
-            {
-                if (!HasClip(request[i])) return null;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public AudioSource PlayRangeAndGetSource(string[] request, Hashtable args)
-        {
-            if (!canPlayAudio) return null;
-
-            for (int i = 0; i < request.Length; i++)
-            {
-                if (!HasClip(request[i])) return null;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Length)]]);
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Plays a sound from a collection of clips that you have entered...
-        /// </summary>
-        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public AudioSource PlayRangeAndGetSource(List<string> request, Hashtable args)
-        {
-            if (!canPlayAudio) return null;
-
-            for (int i = 0; i < request.Count; i++)
-            {
-                if (!HasClip(request[i])) return null;
-            }
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request[Random.Range(0, request.Count)]]);
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            return _source;
-        }
-        
-
-        /// <summary>
-        /// Play a sound from a particular time code on the audio clip audioManagerFile.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayFromTime(string request, float time, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], time, volume, pitch);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-
-
-        /// <summary>
-        /// Play a sound from a particular time code on the audio clip audioManagerFile.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayFromTime(string request, float time, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], time, volume, pitch);
-            _source.outputAudioMixerGroup = mixer;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Play a sound from a particular time code on the audio clip audioManagerFile.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayFromTime(string request, float time, int mixerID, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], time, volume, pitch);
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Play a sound from a particular time code on the audio clip audioManagerFile.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public void PlayFromTime(string request, float time, Hashtable args)
-        {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source.clip = lib[request];
-            _source.time = time;
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Play a sound from a particular time code on the audio clip audioManagerFile and returns the audio source for you to check / use as needed.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public AudioSource PlayFromTimeAndGetSource(string request, float time, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], time, volume, pitch);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Play a sound from a particular time code on the audio clip audioManagerFile and returns the audio source for you to check / use as needed.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public AudioSource PlayFromTimeAndGetSource(string request, float time, AudioMixerGroup mixer,  float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], time, volume, pitch);
-            _source.outputAudioMixerGroup = mixer;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Play a sound from a particular time code on the audio clip audioManagerFile and returns the audio source for you to check / use as needed.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public AudioSource PlayFromTimeAndGetSource(string request, float time, int mixerID,  float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], time, volume, pitch);
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Play a sound from a particular time code on the audio clip audioManagerFile and returns the audio source for you to check / use as needed.
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public AudioSource PlayFromTimeAndGetSource(string request, float time, Hashtable args)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source.clip = lib[request];
-            _source.time = time;
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-
-            return _source;
-        }
-
-        
-        /// <summary>
-        /// Play a sound after a defined amount of time
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayWithDelay(string request, float delay, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch);
-            
-            _source.PlayDelayed(delay);
-            
-            AddToAudioRemoval(_audioRemoval, _source, delay);
-        }
-        
-        
-        /// <summary>
-        /// Play a sound after a defined amount of time
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayWithDelay(string request, float delay, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch);
-
-            _source.outputAudioMixerGroup = mixer;
-            _source.PlayDelayed(delay);
-            
-            AddToAudioRemoval(_audioRemoval, _source, delay);
-        }
-        
-        
-        /// <summary>
-        /// Play a sound after a defined amount of time
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayWithDelay(string request, float delay, int mixerID, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch);
-
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.PlayDelayed(delay);
-            
-            AddToAudioRemoval(_audioRemoval, _source, delay);
-        }
-        
-        
-        /// <summary>
-        /// Play a sound after a defined amount of time
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public void PlayWithDelay(string request, float delay, Hashtable args)
-        {
-            if (!canPlayAudio) return;
-            if (!HasClip(request)) return;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source.clip = lib[request];
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.time = 0;
-            _source.PlayDelayed(delay);
-            
-            AddToAudioRemoval(_audioRemoval, _source, delay);
-        }
-        
-        
-        /// <summary>
-        /// Play a sound after a defined amount of time and returns the audio source for you to check / use as needed...
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        /// <returns>AudioSource | The AudioSource that has been set on this method call.</returns>
-        public AudioSource PlayWithDelayAndGetSource(string request, float delay, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch);
-            _source.PlayDelayed(delay);
-            
-            AddToAudioRemoval(_audioRemoval, _source, delay);
-            
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Play a sound after a defined amount of time and returns the audio source for you to check / use as needed...
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        /// <returns>AudioSource | The AudioSource that has been set on this method call.</returns>
-        public AudioSource PlayWithDelayAndGetSource(string request, float delay, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch);
-            _source.outputAudioMixerGroup = mixer;
-            _source.PlayDelayed(delay);
-            
-            AddToAudioRemoval(_audioRemoval, _source, delay);
-            
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Play a sound after a defined amount of time and returns the audio source for you to check / use as needed...
-        /// </summary>
-        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        /// <returns>AudioSource | The AudioSource that has been set on this method call.</returns>
-        public AudioSource PlayWithDelayAndGetSource(string request, float delay, int mixerID, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[request], 0, volume, pitch);
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.PlayDelayed(delay);
-            
-            AddToAudioRemoval(_audioRemoval, _source, delay);
-            
-            return _source;
-        }
-        
-        
-        /// <summary>
-        /// Play a sound after a defined amount of time and returns the audio source for you to check / use as needed...
-        /// </summary>
-        /// <param name="request">The name of the audio clip you want to play (note it is case sensitive)</param>
-        /// <param name="delay">The amount of time you want the clip to wait before playing</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        /// <returns>AudioSource | The AudioSource that has been set on this method call.</returns>
-        public AudioSource PlayWithDelayAndGetSource(string request, float delay, Hashtable args)
-        {
-            if (!canPlayAudio) return null;
-            if (!HasClip(request)) return null;
-
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source.clip = lib[request];
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.time = 0;
-            _source.PlayDelayed(delay);
-            
-            AddToAudioRemoval(_audioRemoval, _source, delay);
-            
-            return _source;
-        }
-        
-
-        /// <summary>
-        /// Play a random sound that has been scanned by this manager...
-        /// </summary>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayRandom(float volume = 1, float pitch = 1)
-        {
-            if (!canPlayAudio) return;
-            
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[GetRandomSound.name], 0, volume, pitch);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Play a random sound that has been scanned by this manager
-        /// </summary>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public void PlayRandom(Hashtable args)
-        {
-            if (!canPlayAudio) return;
-            
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source.clip = lib[GetRandomSound.name];
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.time = 0;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-
-        
-        /// <summary>
-        /// Play a random sound that has been scanned by this manager, from a particular time
-        /// </summary>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayRandomFromTime(float time, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[GetRandomSound.name], time, volume, pitch);
-            
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Play a random sound that has been scanned by this manager, from a particular time
-        /// </summary>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayRandomFromTime(float time, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[GetRandomSound.name], time, volume, pitch);
-
-            _source.outputAudioMixerGroup = mixer;
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Play a random sound that has been scanned by this manager, from a particular time
-        /// </summary>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayRandomFromTime(float time, int mixerID, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[GetRandomSound.name], time, volume, pitch);
-
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.Play();
-
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-
-        
-        /// <summary>
-        /// Play a random sound that has been scanned by this manager, from a particular time
-        /// </summary>
-        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public void PlayRandomFromTime(float time, Hashtable args)
-        {
-            if (!canPlayAudio) return;
-            
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source.clip = lib[GetRandomSound.name];
-            _source.time = time;
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.Play();
-            
-            AddToAudioRemoval(_audioRemoval, _source);
-        }
-        
-        
-        /// <summary>
-        /// Play a random sound that has been scanned by this manager...
-        /// </summary>
-        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayRandomWithDelay(float delay, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-            
-            _source = SourceSetup(_source, lib[GetRandomSound.name], 0, volume, pitch);
-            
-            _source.PlayDelayed(delay);
-            
-            AddToAudioRemoval(_audioRemoval, _source, delay);
-        }
-        
-        
-        /// <summary>
-        /// Play a random sound that has been scanned by this manager...
-        /// </summary>
-        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
-        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayRandomWithDelay(float delay, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[GetRandomSound.name], 0, volume, pitch);
-
-            _source.outputAudioMixerGroup = mixer;
-            _source.PlayDelayed(delay);
-            
-            AddToAudioRemoval(_audioRemoval, _source, delay);
-        }
-        
-        
-        /// <summary>
-        /// Play a random sound that has been scanned by this manager...
-        /// </summary>
-        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
-        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
-        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
-        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
-        public void PlayRandomWithDelay(float delay, int mixerID, float volume = 1f, float pitch = 1f)
-        {
-            if (!canPlayAudio) return;
-            
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source = SourceSetup(_source, lib[GetRandomSound.name], 0, volume, pitch);
-
-            _source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
-            _source.PlayDelayed(delay);
-            
-            AddToAudioRemoval(_audioRemoval, _source, delay);
-        }
-
-        
-        /// <summary>
-        /// Play a random sound that has been scanned by this manager...
-        /// </summary>
-        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
-        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
-        public void PlayRandomWithDelay(float delay, Hashtable args)
-        {
-            if (!canPlayAudio) return;
-            
-            var _clip = ClipSetup;
-            var _source = _clip.GetComponent<AudioSource>();
-            var _audioRemoval = _source.GetComponent<AudioClipPlayer>();
-
-            _source.clip = lib[GetRandomSound.name];
-            _source = UpdateSourceWithArgs(_source, args);
-            _source.time = 0;
-            _source.PlayDelayed(delay);
-
-            AddToAudioRemoval(_audioRemoval, _source, delay);
+            get => canPlayAudio;
+            set => canPlayAudio = value;
         }
         
         
@@ -1357,15 +67,1331 @@ namespace CarterGames.Assets.AudioManager
                 
                 if (!_go.GetComponent<AudioSource>())
                 {
-                    Debug.LogWarning(
-                        "<color=#E77A7A><b>Audio Manager</b></color> | <color=#D6BA64>Warning Code 4</color> | No AudioSource Component found on the Sound Prefab. Please ensure a AudioSource Component is attached to your prefab.");
+                    AmLog.Warning("No AudioSource Component found on the Sound Prefab. Please ensure a AudioSource Component is attached to your prefab.");
                     return null;
                 }
 
                 return _go.gameObject;
             }
         }
+        
+        
+        /// <summary>
+        /// Changes the Audio Manager File to what is inputted.
+        /// </summary>
+        public AudioManagerFile AudioManagerFile
+        {
+            get => audioManagerFile;
+            set => audioManagerFile = value;
+        }
+        
+        
+        /// <summary>
+        /// Gets the current AMF in use.
+        /// </summary>
+        /// <returns>AMF | The file currently in use by this instance of the Audio Manager</returns>
+        public AudioManagerFile GetAudioManagerFile => audioManagerFile;
+        
+        
+        /// <summary>
+        /// Gets the number of clips currently in this instance of the Audio Manager.
+        /// </summary>
+        public int GetNumberOfClips
+        {
+            get
+            {
+                if (audioManagerFile.library != null)
+                    return audioManagerFile.library.Count;
+                else
+                    return 0;
+            }
+        }
+        
+        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Unity Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
+        private void OnEnable()
+        {
+#if Use_CGAudioManager_Static || USE_CG_AM_STATIC
+            // Checks and removed instances if extra are present.
+            DontDestroyOnLoad(this);
 
+            if (instance == null)
+                instance = this;
+            else
+                Destroy(gameObject);
+#endif
+        }
+        
+        
+        private void Awake()
+        {
+            // Normal AM setup stuff xD
+            if (audioManagerFile.soundPrefab == null)
+                AmLog.Warning("Prefab has not been assigned! Please assign a prefab in the inspector before using the manager.");
+            
+            // For the audio source on the script, only used for previewing clips xD
+            GetComponent<AudioSource>().hideFlags = HideFlags.HideInInspector;
+
+            // Sets up the library from the audio manager file in use...
+            lib = new Dictionary<string, AudioClip>();
+            
+            foreach (var t in audioManagerFile.library)
+                lib.Add(t.key, t.value);
+
+            canPlayAudio = true;
+
+            if (AudioPool.ExistsInScene) return;
+            var obj = new GameObject("Audio Pool");
+            obj.AddComponent<AudioPool>();
+        }
+        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Play Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
+        /// <summary>
+        /// Play a sound that is scanned into the audio manager.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public void Play(string request, float? volume = 1f, float? pitch = 1f, int? priority = 128, bool? loop = false)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request], 0, volume, pitch, priority, loop);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound that is scanned into the audio manager.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at | Default = 1.</param>
+        public void Play(string request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request], 0, volume, pitch);
+
+            source.outputAudioMixerGroup = mixer;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+
+
+        /// <summary>
+        /// Play a sound that is scanned into the audio manager.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at | Default = 1.</param>
+        public void Play(string request, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request], 0, volume, pitch);
+
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.Play();
+
+            AddToAudioRemoval(audioRemoval, source);
+        }
+
+
+        /// <summary>
+        /// Play a sound that is scanned into the audio manager.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public void Play(string request, Hashtable args)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source.clip = lib[request];
+            source = UpdateSourceWithArgs(source, args);
+            source.time = 0;
+            source.Play();
+
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound that is scanned into the audio manager and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1.</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1.</param>
+        public AudioSource PlayAndGetSource(string request, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], 0, volume, pitch);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound that is scanned into the audio manager and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1.</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1.</param>
+        public AudioSource PlayAndGetSource(string request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], 0, volume, pitch);
+            source.outputAudioMixerGroup = mixer;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound that is scanned into the audio manager and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1.</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1.</param>
+        public AudioSource PlayAndGetSource(string request, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], 0, volume, pitch);
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound that is scanned into the audio manager and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public AudioSource PlayAndGetSource(string request, Hashtable args)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source.clip = lib[request];
+            source = UpdateSourceWithArgs(source, args);
+            source.time = 0;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            
+            return source;
+        }
+        
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public void PlayRange(string[] request, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+
+            for (var i = 0; i < request.Length; i++)
+                if (!HasClip(request[i])) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public void PlayRange(List<string> request, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+
+            for (var i = 0; i < request.Count; i++)
+                if (!HasClip(request[i])) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public void PlayRange(string[] request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+
+            for (var i = 0; i < request.Length; i++)
+                if (!HasClip(request[i])) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
+            source.outputAudioMixerGroup = mixer;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public void PlayRange(List<string> request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+
+            for (var i = 0; i < request.Count; i++)
+                if (!HasClip(request[i])) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
+            source.outputAudioMixerGroup = mixer;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public void PlayRange(string[] request, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+
+            for (var i = 0; i < request.Length; i++)
+                if (!HasClip(request[i])) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public void PlayRange(List<string> request, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+
+            for (var i = 0; i < request.Count; i++)
+                if (!HasClip(request[i])) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public void PlayRange(string[] request, Hashtable args)
+        {
+            if (!CanPlayAudio) return;
+
+            for (var i = 0; i < request.Length; i++)
+                if (!HasClip(request[i])) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Length)]]);
+            source = UpdateSourceWithArgs(source, args);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public void PlayRange(List<string> request, Hashtable args)
+        {
+            if (!CanPlayAudio) return;
+
+            for (var i = 0; i < request.Count; i++)
+                if (!HasClip(request[i])) return;
+            
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Count)]]);
+            source = UpdateSourceWithArgs(source, args);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public AudioSource PlayRangeAndGetSource(string[] request, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+
+            for (var i = 0; i < request.Length; i++)
+                if (!HasClip(request[i])) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public AudioSource PlayRangeAndGetSource(List<string> request, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+
+            for (var i = 0; i < request.Count; i++)
+                if (!HasClip(request[i])) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public AudioSource PlayRangeAndGetSource(string[] request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+
+            for (var i = 0; i < request.Length; i++)
+                if (!HasClip(request[i])) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
+            source.outputAudioMixerGroup = mixer;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public AudioSource PlayRangeAndGetSource(List<string> request, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+
+            for (var i = 0; i < request.Count; i++)
+                if (!HasClip(request[i])) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
+            source.outputAudioMixerGroup = mixer;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public AudioSource PlayRangeAndGetSource(string[] request, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+
+            for (var i = 0; i < request.Length; i++)
+                if (!HasClip(request[i])) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Length)]],0, volume, pitch);
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Optional | Float | The volume that the clip will be played at | Default = 1.</param>
+        /// <param name="pitch">Optional | Float | The pitch that the sound is played at | Default = 1.</param>
+        public AudioSource PlayRangeAndGetSource(List<string> request, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+
+            for (var i = 0; i < request.Count; i++)
+                if (!HasClip(request[i])) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Count)]],0, volume, pitch);
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String Array | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public AudioSource PlayRangeAndGetSource(string[] request, Hashtable args)
+        {
+            if (!CanPlayAudio) return null;
+
+            for (var i = 0; i < request.Length; i++)
+                if (!HasClip(request[i])) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Length)]]);
+            source = UpdateSourceWithArgs(source, args);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Plays a sound from a collection of clips that you have entered...
+        /// </summary>
+        /// <param name="request">String List | The name of the audio clip you want to play (note it is case sensitive).</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public AudioSource PlayRangeAndGetSource(List<string> request, Hashtable args)
+        {
+            if (!CanPlayAudio) return null;
+
+            for (var i = 0; i < request.Count; i++)
+                if (!HasClip(request[i])) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request[Random.Range(0, request.Count)]]);
+            source = UpdateSourceWithArgs(source, args);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+
+        /// <summary>
+        /// Play a sound from a particular time code on the audio clip audioManagerFile.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayFromTime(string request, float time, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], time, volume, pitch);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+
+
+        /// <summary>
+        /// Play a sound from a particular time code on the audio clip audioManagerFile.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayFromTime(string request, float time, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], time, volume, pitch);
+            source.outputAudioMixerGroup = mixer;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound from a particular time code on the audio clip audioManagerFile.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayFromTime(string request, float time, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], time, volume, pitch);
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound from a particular time code on the audio clip audioManagerFile.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public void PlayFromTime(string request, float time, Hashtable args)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source.clip = lib[request];
+            source.time = time;
+            source = UpdateSourceWithArgs(source, args);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound from a particular time code on the audio clip audioManagerFile and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public AudioSource PlayFromTimeAndGetSource(string request, float time, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], time, volume, pitch);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound from a particular time code on the audio clip audioManagerFile and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public AudioSource PlayFromTimeAndGetSource(string request, float time, AudioMixerGroup mixer,  float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], time, volume, pitch);
+            source.outputAudioMixerGroup = mixer;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound from a particular time code on the audio clip audioManagerFile and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public AudioSource PlayFromTimeAndGetSource(string request, float time, int mixerID,  float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], time, volume, pitch);
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound from a particular time code on the audio clip audioManagerFile and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public AudioSource PlayFromTimeAndGetSource(string request, float time, Hashtable args)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source.clip = lib[request];
+            source.time = time;
+            source = UpdateSourceWithArgs(source, args);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+
+            return source;
+        }
+
+        
+        /// <summary>
+        /// Play a sound after a defined amount of time
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayWithDelay(string request, float delay, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], 0, volume, pitch);
+            
+            source.PlayDelayed(delay);
+            
+            AddToAudioRemoval(audioRemoval, source, delay);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound after a defined amount of time
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayWithDelay(string request, float delay, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], 0, volume, pitch);
+
+            source.outputAudioMixerGroup = mixer;
+            source.PlayDelayed(delay);
+            
+            AddToAudioRemoval(audioRemoval, source, delay);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound after a defined amount of time
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayWithDelay(string request, float delay, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], 0, volume, pitch);
+
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.PlayDelayed(delay);
+            
+            AddToAudioRemoval(audioRemoval, source, delay);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound after a defined amount of time
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public void PlayWithDelay(string request, float delay, Hashtable args)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source.clip = lib[request];
+            source = UpdateSourceWithArgs(source, args);
+            source.time = 0;
+            source.PlayDelayed(delay);
+            
+            AddToAudioRemoval(audioRemoval, source, delay);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound after a defined amount of time and returns the audio source for you to check / use as needed...
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        /// <returns>AudioSource | The AudioSource that has been set on this method call.</returns>
+        public AudioSource PlayWithDelayAndGetSource(string request, float delay, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request], 0, volume, pitch);
+            source.PlayDelayed(delay);
+            
+            AddToAudioRemoval(audioRemoval, source, delay);
+            
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound after a defined amount of time and returns the audio source for you to check / use as needed...
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        /// <returns>AudioSource | The AudioSource that has been set on this method call.</returns>
+        public AudioSource PlayWithDelayAndGetSource(string request, float delay, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request], 0, volume, pitch);
+            source.outputAudioMixerGroup = mixer;
+            source.PlayDelayed(delay);
+            
+            AddToAudioRemoval(audioRemoval, source, delay);
+            
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound after a defined amount of time and returns the audio source for you to check / use as needed...
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        /// <returns>AudioSource | The AudioSource that has been set on this method call.</returns>
+        public AudioSource PlayWithDelayAndGetSource(string request, float delay, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request], 0, volume, pitch);
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.PlayDelayed(delay);
+            
+            AddToAudioRemoval(audioRemoval, source, delay);
+            
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound after a defined amount of time and returns the audio source for you to check / use as needed...
+        /// </summary>
+        /// <param name="request">The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="delay">The amount of time you want the clip to wait before playing</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        /// <returns>AudioSource | The AudioSource that has been set on this method call.</returns>
+        public AudioSource PlayWithDelayAndGetSource(string request, float delay, Hashtable args)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source.clip = lib[request];
+            source = UpdateSourceWithArgs(source, args);
+            source.time = 0;
+            source.PlayDelayed(delay);
+            
+            AddToAudioRemoval(audioRemoval, source, delay);
+            
+            return source;
+        }
+        
+
+        /// <summary>
+        /// Play a random sound that has been scanned by this manager...
+        /// </summary>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayRandom(float volume = 1, float pitch = 1)
+        {
+            if (!CanPlayAudio) return;
+            
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[GetRandomSound.name], 0, volume, pitch);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a random sound that has been scanned by this manager
+        /// </summary>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public void PlayRandom(Hashtable args)
+        {
+            if (!CanPlayAudio) return;
+            
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source.clip = lib[GetRandomSound.name];
+            source = UpdateSourceWithArgs(source, args);
+            source.time = 0;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+
+        
+        /// <summary>
+        /// Play a random sound that has been scanned by this manager, from a particular time
+        /// </summary>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayRandomFromTime(float time, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[GetRandomSound.name], time, volume, pitch);
+            
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a random sound that has been scanned by this manager, from a particular time
+        /// </summary>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayRandomFromTime(float time, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[GetRandomSound.name], time, volume, pitch);
+
+            source.outputAudioMixerGroup = mixer;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a random sound that has been scanned by this manager, from a particular time
+        /// </summary>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayRandomFromTime(float time, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[GetRandomSound.name], time, volume, pitch);
+
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.Play();
+
+            AddToAudioRemoval(audioRemoval, source);
+        }
+
+        
+        /// <summary>
+        /// Play a random sound that has been scanned by this manager, from a particular time
+        /// </summary>
+        /// <param name="time">Float | The time you want to clip the be played from (float value for seconds)</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public void PlayRandomFromTime(float time, Hashtable args)
+        {
+            if (!CanPlayAudio) return;
+            
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source.clip = lib[GetRandomSound.name];
+            source.time = time;
+            source = UpdateSourceWithArgs(source, args);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a random sound that has been scanned by this manager...
+        /// </summary>
+        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayRandomWithDelay(float delay, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[GetRandomSound.name], 0, volume, pitch);
+            
+            source.PlayDelayed(delay);
+            
+            AddToAudioRemoval(audioRemoval, source, delay);
+        }
+        
+        
+        /// <summary>
+        /// Play a random sound that has been scanned by this manager...
+        /// </summary>
+        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayRandomWithDelay(float delay, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[GetRandomSound.name], 0, volume, pitch);
+
+            source.outputAudioMixerGroup = mixer;
+            source.PlayDelayed(delay);
+            
+            AddToAudioRemoval(audioRemoval, source, delay);
+        }
+        
+        
+        /// <summary>
+        /// Play a random sound that has been scanned by this manager...
+        /// </summary>
+        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayRandomWithDelay(float delay, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[GetRandomSound.name], 0, volume, pitch);
+
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.PlayDelayed(delay);
+            
+            AddToAudioRemoval(audioRemoval, source, delay);
+        }
+
+        
+        /// <summary>
+        /// Play a random sound that has been scanned by this manager...
+        /// </summary>
+        /// <param name="delay">Float | The amount of time you want the clip to wait before playing</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public void PlayRandomWithDelay(float delay, Hashtable args)
+        {
+            if (!CanPlayAudio) return;
+            
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source.clip = lib[GetRandomSound.name];
+            source = UpdateSourceWithArgs(source, args);
+            source.time = 0;
+            source.PlayDelayed(delay);
+
+            AddToAudioRemoval(audioRemoval, source, delay);
+        }
+        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Utility Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
         /// <summary>
         /// Sets up some of the standard audio source values that are consistently used in methods...
@@ -1399,19 +1425,7 @@ namespace CarterGames.Assets.AudioManager
             if (source.loop) return;
             clipPlayer.Cleanup(source.clip.length + extraTime);
         }
-        
 
-        /// <summary>
-        /// Toggles whether or not the manager can play audio....
-        /// This doesn't affect the Audio Player or Music Player....
-        /// </summary>
-        public bool CanPlayAudio
-        {
-            get => canPlayAudio;
-            set => canPlayAudio = value;
-        }
-        
-        
         /// <summary>
         /// Checks to see if a clip exists...
         /// </summary>
@@ -1422,47 +1436,15 @@ namespace CarterGames.Assets.AudioManager
             if (lib.ContainsKey(request))
                 return true;
             
-            Debug.LogWarning($"<color=#E77A7A><b>Audio Manager</b></color> | <color=#D6BA64>Warning Code 2</color> | Could not find clip: <b><i>{request}</i></b>. Please ensure the clip is scanned and the string you entered is correct (Note the input is CaSe SeNsItIvE).");
+            AmLog.Warning($"Could not find clip: <b><i>{request}</i></b>. Please ensure the clip is scanned and the string you entered is correct (Note the input is CaSe SeNsItIvE).");
             return false;
         }
-        
-        
-        /// <summary>
-        /// Gets the number of clips currently in this instance of the Audio Manager.
-        /// </summary>
-        public int GetNumberOfClips
-        {
-            get
-            {
-                if (audioManagerFile.library != null)
-                    return audioManagerFile.library.Count;
-                else
-                    return 0;
-            }
-        }
-        
-        
+
+
         /// <summary>
         /// Picks a random sound from the current AMF and returns it.
         /// </summary>
-        public AudioClip GetRandomSound => lib.Values.ElementAt(UnityEngine.Random.Range(0, audioManagerFile.library.Count - 1));
-        
-        
-        /// <summary>
-        /// Changes the Audio Manager File to what is inputted.
-        /// </summary>
-        public AudioManagerFile AudioManagerFile
-        {
-            get => audioManagerFile;
-            set => audioManagerFile = value;
-        }
-        
-        
-        /// <summary>
-        /// Gets the current AMF in use.
-        /// </summary>
-        /// <returns>AMF | The file currently in use by this instance of the Audio Manager</returns>
-        public AudioManagerFile GetAudioManagerFile => audioManagerFile;
+        public AudioClip GetRandomSound => lib.Values.ElementAt(Random.Range(0, audioManagerFile.library.Count - 1));
         
         
         /// <summary>

@@ -4,9 +4,15 @@ using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager.Editor
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class AudioManagerEditorUtil
     {
-        public const string DefaultBaseAudioScanPath = "Assets";
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Fields
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
         public const string SettingsWindowPath = "Project/Carter Games/Audio Manager";
         private const string SettingsAssetDefaultFullPath = "Assets/Resources/Carter Games/Audio Manager/Audio Manager Settings.asset";
         private const string SettingsAssetFilter = "t:audiomanagersettings";
@@ -18,15 +24,11 @@ namespace CarterGames.Assets.AudioManager.Editor
         private const string StopIconTransparentGraphicFilter = "StopButton";
         private const string CarterGamesBannerGraphicFilter = "CarterGamesBanner";
         
-
-        private static readonly Color32 AmRed = new Color32(255, 150, 157, 255);
-        public static readonly Color TitleColour = new Color32(151, 121, 209, 255);
         public static readonly Color Green = new Color32(72, 222, 55, 255);
         public static readonly Color Yellow = new Color32(245, 234, 56, 255);
         public static readonly Color Red = new Color32(255, 150, 157, 255);
         public static readonly Color Blue = new Color32(151, 196, 255, 255);
         public static readonly Color Hidden = new Color(0, 0, 0, .3f);
-        
         
         private static Texture2D cachedSpeakerLogoImg;
         private static Texture2D cachedMusicLogoImg;
@@ -36,7 +38,15 @@ namespace CarterGames.Assets.AudioManager.Editor
         private static Texture2D cachedPlayButtonImg;
         private static Texture2D cachedStopButtonImg;
         
-
+        private static AudioManagerSettings _settingsAsset;
+        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Properties
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
+        /// <summary>
+        /// Gets the header graphic of the asset.
+        /// </summary>
         public static Texture2D ManagerHeader
         {
             get
@@ -48,6 +58,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
         
         
+        /// <summary>
+        /// Gets the carter games banner graphic.
+        /// </summary>
         public static Texture2D CarterGamesBanner 
         {
             get
@@ -59,6 +72,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
 
         
+        /// <summary>
+        /// Gets the speaker logo.
+        /// </summary>
         public static Texture2D SpeakerLogo
         {
             get
@@ -70,6 +86,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
         
         
+        /// <summary>
+        /// Gets the music logo.
+        /// </summary>
         public static Texture2D MusicLogo
         {
             get
@@ -81,6 +100,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
         
         
+        /// <summary>
+        /// Gets the settings logo.
+        /// </summary>
         public static Texture2D SettingsLogoTransparent
         {
             get
@@ -92,6 +114,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
         
         
+        /// <summary>
+        /// Gets the play icon.
+        /// </summary>
         public static Texture2D PlayButton
         {
             get
@@ -103,6 +128,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
         
         
+        /// <summary>
+        /// Gets the stop icon.
+        /// </summary>
         public static Texture2D StopButton
         {
             get
@@ -114,12 +142,12 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
 
 
+        /// <summary>
+        /// Gets whether or not there is an audio manager file in the project.
+        /// </summary>
         public static bool HasAnyAMF => AssetDatabase.FindAssets("t:audiomanagerfile", null).Length > 0;
 
 
-        private static AudioManagerSettings _settingsAsset;
-        
-        
         /// <summary>
         /// Confirms if there is a settings asset in the project or not...
         /// </summary>
@@ -145,7 +173,9 @@ namespace CarterGames.Assets.AudioManager.Editor
             }
         }
         
-        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   File Management Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
         /// <summary>
         /// Creates a file of the type requested...
@@ -198,9 +228,41 @@ namespace CarterGames.Assets.AudioManager.Editor
             return (Texture2D)GetFile<Texture2D>(filter);
         }
         
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
         
+        /// <summary>
+        /// Gets the header for a settings asset.
+        /// </summary>
+        public static void SettingsHeader()
+        {
+            GUILayout.Space(10f);
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            // Shows either the Carter Games Logo or an alternative for if the icon is deleted/not included when you import the package
+            // Note: if you are using an older version of the asset, the directory/name of the logo may not match this and therefore will display the text title only
+            if (SettingsLogoTransparent)
+            {
+                if (GUILayout.Button(SettingsLogoTransparent, GUIStyle.none, GUILayout.MaxHeight(65)))
+                {
+                    GUI.FocusControl(null);
+                }
+            }
+
+            GUILayout.FlexibleSpace();
+            EditorGUILayout.EndHorizontal();
+
+            GUILayout.Space(2.5f);
+        }
         
+        
+        /// <summary>
+        /// Gets the header for most custom inspectors to help reduce duplicate code.
+        /// </summary>
+        /// <param name="scriptName">The name of the script to show.</param>
         public static void Header(string scriptName)
         {
             GUILayout.Space(10f);
@@ -232,7 +294,15 @@ namespace CarterGames.Assets.AudioManager.Editor
             GUILayout.Space(10f);
         }
 
-
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Utility Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
+        /// <summary>
+        /// Gets the text width of the text string entered.
+        /// </summary>
+        /// <param name="text">The text to get the width of.</param>
+        /// <returns>The width of the text entered.</returns>
         public static float TextWidth(string text)
         {
             return GUI.skin.label.CalcSize(new GUIContent(text)).x;

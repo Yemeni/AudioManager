@@ -1,34 +1,18 @@
-/*
- * 
- *  Audio Manager
- *							  
- *	Audio Manager File Editor
- *      The editor script for the Audio Manager Files, handles the custom inspector for any Audio Manager File.
- *
- *  Warning:
- *	    Please refrain from editing this script as it will cause issues to the assets...
- *			
- *  Written by:
- *      Jonathan Carter
- *
- *  Published By:
- *      Carter Games
- *      E: hello@carter.games
- *      W: https://www.carter.games
- *		
- *  Version: 2.5.8
- *	Last Updated: 18/06/2022 (d/m/y)							
- * 
- */
-
 using UnityEditor;
 using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager.Editor
 {
+    /// <summary>
+    /// The custom inspector for the Audio Manager File.
+    /// </summary>
     [CustomEditor(typeof(AudioManagerFile))]
     public class AudioManagerFileEditor : UnityEditor.Editor
     {
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Fields
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */ 
+        
         private readonly Color32 amRedCol = new Color32(255, 150, 157, 255);
         private readonly string[] TabTitles = new string[2] {"Settings", "Library"};
         
@@ -42,23 +26,13 @@ namespace CarterGames.Assets.AudioManager.Editor
         private Color defaultContentCol;
         private Color normalBackgroundCol;
         
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Unity Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */ 
         
         private void OnEnable()
         {
             RefreshReferences();
-        }
-
-
-        private void RefreshReferences()
-        {
-            audioPrefab = serializedObject.FindProperty("soundPrefab");
-            isPopulated = serializedObject.FindProperty("isPopulated");
-            audioMixers = serializedObject.FindProperty("audioMixer");
-            directories = serializedObject.FindProperty("directory");
-            library = serializedObject.FindProperty("library");
-            tabPos = serializedObject.FindProperty("tabPos");
-            defaultContentCol = GUI.contentColor;
-            normalBackgroundCol = GUI.backgroundColor;
         }
 
 
@@ -73,8 +47,31 @@ namespace CarterGames.Assets.AudioManager.Editor
             serializedObject.ApplyModifiedProperties();
             serializedObject.Update();
         }
+        
+        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */ 
+        
+        /// <summary>
+        /// Updates the references for all the serialized properties.
+        /// </summary>
+        private void RefreshReferences()
+        {
+            audioPrefab = serializedObject.FindProperty("soundPrefab");
+            isPopulated = serializedObject.FindProperty("isPopulated");
+            audioMixers = serializedObject.FindProperty("audioMixer");
+            directories = serializedObject.FindProperty("directory");
+            library = serializedObject.FindProperty("library");
+            tabPos = serializedObject.FindProperty("tabPos");
+            defaultContentCol = GUI.contentColor;
+            normalBackgroundCol = GUI.backgroundColor;
+        }
 
 
+        /// <summary>
+        /// Draws the tab options for the inspector.
+        /// </summary>
         private void RenderTabBar()
         {
             GUILayout.Space(5f);
@@ -83,6 +80,9 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
 
         
+        /// <summary>
+        /// Draws the script section of the inspector.
+        /// </summary>
         private void DrawScriptSection()
         {
             GUILayout.Space(4.5f);
@@ -98,6 +98,10 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
         
 
+        /// <summary>
+        /// Draws the settings section of the inspector.
+        /// </summary>
+        /// <param name="pos">The position of the tab is currently on.</param>
         private void RenderSettings(int pos)
         {
             if (!pos.Equals(0)) return;
@@ -122,15 +126,9 @@ namespace CarterGames.Assets.AudioManager.Editor
             
             //
             //
-            //
-            //
-            //
             
             GUILayout.Space(3.5f);
             
-            //
-            //
-            //
             //
             //
             
@@ -150,7 +148,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             for (var i = 0; i < audioMixers.arraySize; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"#{(i+1).ToString()}", GUILayout.Width(TextWidth($"#{(i+1).ToString()} ")));
+                EditorGUILayout.LabelField($"#{(i+1).ToString()}", GUILayout.Width(AudioManagerEditorUtil.TextWidth($"#{(i+1).ToString()} ")));
                 EditorGUILayout.PropertyField(audioMixers.GetArrayElementAtIndex(i), GUIContent.none);
 
                 GUI.backgroundColor = AudioManagerEditorUtil.Green;
@@ -173,18 +171,12 @@ namespace CarterGames.Assets.AudioManager.Editor
             
             //
             //
-            //
-            //
-            //
-            
+
             GUILayout.Space(3.5f);
             
             //
             //
-            //
-            //
-            //
-            
+
             EditorGUILayout.BeginVertical("HelpBox");
             GUILayout.Space(2.5f);
             
@@ -209,7 +201,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             for (var i = 0; i < directories.arraySize; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"#{(i+1).ToString()}", GUILayout.Width(TextWidth($"#{(i+1).ToString()} ")));
+                EditorGUILayout.LabelField($"#{(i+1).ToString()}", GUILayout.Width(AudioManagerEditorUtil.TextWidth($"#{(i+1).ToString()} ")));
                 directories.GetArrayElementAtIndex(i).stringValue = DirectorySelectHelper.ConvertIntToDir(EditorGUILayout.Popup(DirectorySelectHelper.ConvertStringToIndex(directories.GetArrayElementAtIndex(i).stringValue, options), options.ToArray()), options);
                 
                 GUI.backgroundColor = AudioManagerEditorUtil.Green;
@@ -232,6 +224,10 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
 
 
+        /// <summary>
+        /// Draws the library of all the clips in the inspector.
+        /// </summary>
+        /// <param name="pos">The position of the tab is currently on.</param>
         private void RenderLibrary(int pos)
         {
             if (!pos.Equals(1)) return;
@@ -256,10 +252,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             
             //
             //
-            //
-            //
-            //
-            
+
             EditorGUILayout.BeginVertical("HelpBox");
             GUILayout.Space(2.5f);
 
@@ -296,12 +289,6 @@ namespace CarterGames.Assets.AudioManager.Editor
             
             GUILayout.Space(2.5f);
             EditorGUILayout.EndVertical();
-        }
-        
-        
-        private static float TextWidth(string text)
-        {
-            return GUI.skin.label.CalcSize(new GUIContent(text)).x;
         }
     }
 }

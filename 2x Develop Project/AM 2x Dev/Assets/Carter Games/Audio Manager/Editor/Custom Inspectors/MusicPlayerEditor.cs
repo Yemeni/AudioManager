@@ -1,39 +1,19 @@
-﻿/*
- * 
- *  Audio Manager
- *							  
- *	Music Player Editor
- *      Handles the custom inspector for the music player script....
- *
- *  Warning:
- *	    Please refrain from editing this script as it will cause issues to the assets...
- *
- *  Written by:
- *      Jonathan Carter
- *
- *  Published By:
- *      Carter Games
- *      E: hello@carter.games
- *      W: https://www.carter.games
- *		
- *  Version: 2.5.8
- *	Last Updated: 18/06/2022 (d/m/y)							
- * 
- */
-
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 
 namespace CarterGames.Assets.AudioManager.Editor
 {
+    /// <summary>
+    /// The custom inspector for the music player script.
+    /// </summary>
     [CustomEditor(typeof(MusicPlayer)), CanEditMultipleObjects]
     public class MusicPlayerEditor : UnityEditor.Editor
     {
-        private readonly Color32 greenCol = new Color32(41, 176, 97, 255);
-        private readonly Color32 redCol = new Color32(190, 42, 42, 255);
-        private readonly Color32 amRedCol = new Color32(255, 150, 157, 255);
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Fields
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+        
         private MusicPlayer player;
-
         private Color normalBgCol;
         
         private SerializedProperty musicTrack;
@@ -48,10 +28,11 @@ namespace CarterGames.Assets.AudioManager.Editor
         private SerializedProperty musicIntroTransition;
         private SerializedProperty transitionLength;
         
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Unity Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
-        /// <summary>
-        /// Assigns the script and does any setup needed.
-        /// </summary>
+
         private void OnEnable()
         {
             player = (MusicPlayer)target;
@@ -72,9 +53,6 @@ namespace CarterGames.Assets.AudioManager.Editor
         }
         
         
-        /// <summary>
-        /// Overrides the default inspector of the Music Player Script with this custom one.
-        /// </summary>
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -82,14 +60,58 @@ namespace CarterGames.Assets.AudioManager.Editor
             if (!player)
                 player = (MusicPlayer)target;
 
+            EditorGUI.BeginChangeCheck();
+            
             AudioManagerEditorUtil.Header("Music Player");
             AudioSourceSetup();
-
-            
             DrawScriptSection();
             
             GUILayout.Space(2.5f);
+            DrawTrackSection();
             
+            //
+            //
+
+            GUILayout.Space(2.5f);
+            DrawFirstPlaySetup();
+            GUILayout.Space(2.5f);
+            
+            //
+            //
+
+            DrawSourcesSection();
+
+            if (!EditorGUI.EndChangeCheck()) return;
+            serializedObject.ApplyModifiedProperties();
+        }
+
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+
+        /// <summary>
+        /// Draws the script section in the custom inspector.
+        /// </summary>
+        private void DrawScriptSection()
+        {
+            GUILayout.Space(4.5f);
+            EditorGUILayout.BeginVertical("HelpBox");
+            GUILayout.Space(1.5f);
+            
+            GUI.enabled = false;
+            EditorGUILayout.ObjectField("Script:", MonoScript.FromMonoBehaviour(target as MusicPlayer), typeof(MusicPlayer), false);
+            GUI.enabled = true;
+            
+            GUILayout.Space(1.5f);
+            EditorGUILayout.EndVertical();
+        }
+
+
+        /// <summary>
+        /// Draws the track section of the custom inspector.
+        /// </summary>
+        private void DrawTrackSection()
+        {
             EditorGUILayout.BeginVertical("HelpBox");
             GUILayout.Space(2.5f);
             
@@ -102,21 +124,14 @@ namespace CarterGames.Assets.AudioManager.Editor
 
             GUILayout.Space(2.5f);
             EditorGUILayout.EndVertical();
-            
-            //
-            //
-            //
-            //
-            //
-            
-            GUILayout.Space(2.5f);
-            
-            //
-            //
-            //
-            //
-            //
-            
+        }
+        
+        
+        /// <summary>
+        /// Draws the first setup section of the custom inspector.
+        /// </summary>
+        private void DrawFirstPlaySetup()
+        {
             EditorGUILayout.BeginVertical("HelpBox");
             GUILayout.Space(2.5f);
             
@@ -132,24 +147,17 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.PropertyField(shouldLoop, new GUIContent("Should Loop Track:"));
             EditorGUILayout.PropertyField(timeToStartFrom, new GUIContent("Start Track At:"));
             EditorGUILayout.PropertyField(timeToLoopAt, new GUIContent("Loop Track At:"));
-
+            
             GUILayout.Space(2.5f);
             EditorGUILayout.EndVertical();
-            
-            //
-            //
-            //
-            //
-            //
-            
-            GUILayout.Space(2.5f);
-            
-            //
-            //
-            //
-            //
-            //
-            
+        }
+
+
+        /// <summary>
+        /// Draws the sources button in the custom inspector.
+        /// </summary>
+        private void DrawSourcesSection()
+        {
             EditorGUILayout.BeginVertical("HelpBox");
             GUILayout.Space(2.5f);
             
@@ -182,27 +190,12 @@ namespace CarterGames.Assets.AudioManager.Editor
 
             GUILayout.Space(2.5f);
             EditorGUILayout.EndVertical();
-
-
-            serializedObject.ApplyModifiedProperties();
         }
-
         
-        private void DrawScriptSection()
-        {
-            GUILayout.Space(4.5f);
-            EditorGUILayout.BeginVertical("HelpBox");
-            GUILayout.Space(1.5f);
-            
-            GUI.enabled = false;
-            EditorGUILayout.ObjectField("Script:", MonoScript.FromMonoBehaviour(target as MusicPlayer), typeof(MusicPlayer), false);
-            GUI.enabled = true;
-            
-            GUILayout.Space(1.5f);
-            EditorGUILayout.EndVertical();
-        }
-
-
+        
+        /// <summary>
+        /// Sets up the audio sources for the player to use.
+        /// </summary>
         private void AudioSourceSetup()
         {
             // Adds an Audio Source to the gameObject this script is on if its not already there

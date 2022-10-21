@@ -6,10 +6,20 @@ using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager.Editor
 {
+    /// <summary>
+    /// A helper class to save space on the audio manager editor class a little.
+    /// </summary>
     public static class AudioManagerScriptHelper
     {
-        private static bool shouldUpdateDirectories;
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Fields
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+
+        private static bool _shouldUpdateDirectories;
         
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
         /// <summary>
         /// Checks to see how many files are found from the scan so it can be displayed.
@@ -71,14 +81,10 @@ namespace CarterGames.Assets.AudioManager.Editor
             return 0;
         }
         
-        
-        //
-        //
-        //  Directories...
-        //
-        //
-        
-        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Directory Management Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+
         /// <summary>
         /// Checks to see if there are no directories...
         /// </summary>
@@ -163,8 +169,8 @@ namespace CarterGames.Assets.AudioManager.Editor
         public static void DirectoriesDisplay(SerializedProperty fileDirs)
         {
             var defaultCol = GUI.backgroundColor;
-            var options = DirectorySelectHelper.GetDirectoriesFromBase(shouldUpdateDirectories);
-            shouldUpdateDirectories = false;
+            var options = DirectorySelectHelper.GetDirectoriesFromBase(_shouldUpdateDirectories);
+            _shouldUpdateDirectories = false;
             
             if (fileDirs.arraySize <= 0) return;
             for (var i = 0; i < fileDirs.arraySize; i++)
@@ -183,7 +189,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                 fileDirs.GetArrayElementAtIndex(i).stringValue = DirectorySelectHelper.ConvertIntToDir(EditorGUILayout.Popup(DirectorySelectHelper.ConvertStringToIndex(fileDirs.GetArrayElementAtIndex(i).stringValue, options), options.ToArray()), options);
                 if (EditorGUI.EndChangeCheck())
                 {
-                    shouldUpdateDirectories = true;
+                    _shouldUpdateDirectories = true;
                     fileDirs.serializedObject.ApplyModifiedProperties();
                     fileDirs.serializedObject.Update();
                 }
@@ -198,7 +204,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                         fileDirs.InsertArrayElementAtIndex(i);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        shouldUpdateDirectories = true;
+                        _shouldUpdateDirectories = true;
                         fileDirs.serializedObject.ApplyModifiedProperties();
                         fileDirs.serializedObject.Update();
                     }
@@ -215,7 +221,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                         fileDirs.DeleteArrayElementAtIndex(i);
                     if (EditorGUI.EndChangeCheck())
                     {
-                        shouldUpdateDirectories = true;
+                        _shouldUpdateDirectories = true;
                         fileDirs.serializedObject.ApplyModifiedProperties();
                         fileDirs.serializedObject.Update();
                     }
@@ -231,14 +237,10 @@ namespace CarterGames.Assets.AudioManager.Editor
             }
         }
         
-        
-        //
-        //
-        //
-        //
-        //
-        
-        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Clip Management Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
+
         /// <summary>
         /// Adds all strings for the found clips to the AMF.
         /// </summary>
@@ -295,7 +297,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             // Checks to see if there is anything in the path, if its empty it will not run the rest of the code and instead put a message in the console
             if (_allFiles.Any())
             {
-                AudioClip _source;
+                AudioClip source;
 
                 foreach (var _thingy in _allFiles)
                 {
@@ -308,8 +310,8 @@ namespace CarterGames.Assets.AudioManager.Editor
 
                     Debug.Log(_path);
                     
-                    _source = (AudioClip)AssetDatabase.LoadAssetAtPath(_path, typeof(AudioClip));
-                    audioList.Add(_source);
+                    source = (AudioClip)AssetDatabase.LoadAssetAtPath(_path, typeof(AudioClip));
+                    audioList.Add(source);
                 }
 
                 fileIsPopulated.boolValue = true;
@@ -322,12 +324,9 @@ namespace CarterGames.Assets.AudioManager.Editor
             }
         }
         
-        
-        //
-        //
-        //
-        //
-        //
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Help Label Methods
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
         
         /// <summary>
         /// Shows a variety of help labels when stuff goes wrong, these just explain to the user what has happened and how they should go about fixing it.
