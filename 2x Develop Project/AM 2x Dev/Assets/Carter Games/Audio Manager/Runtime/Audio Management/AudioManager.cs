@@ -13,7 +13,7 @@ namespace CarterGames.Assets.AudioManager
     /// The main Audio Manager script used to play audio in your game...
     /// Static Instanced version of the class available if enabled in the inspector...
     /// </summary>
-    [Serializable]
+    [Serializable, AddComponentMenu("Carter Games/Audio Manager/Audio Manager")]
     public class AudioManager : MonoBehaviour
     {
         /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────

@@ -6,7 +6,7 @@ namespace CarterGames.Assets.AudioManager
     /// <summary>
     /// The class that plays the audio from the manager at runtime.
     /// </summary>
-    [RequireComponent(typeof(AudioSource))]
+    [RequireComponent(typeof(AudioSource)), AddComponentMenu("Carter Games/Audio Manager/Audio Clip Player")]
     public class AudioClipPlayer : MonoBehaviour
     {
         /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────

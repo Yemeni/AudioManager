@@ -7,6 +7,7 @@ namespace CarterGames.Assets.AudioManager
     /// <summary>
     /// The audio player, designed to play audio from an AMF from a UI object.
     /// </summary>
+    [AddComponentMenu("Carter Games/Audio Manager/Audio Player")]
     public class AudioPlayer : MonoBehaviour
     {
         /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────

@@ -7,7 +7,7 @@ namespace CarterGames.Assets.AudioManager
     /// <summary>
     /// Holds the audio data for the audio manager class to use.
     /// </summary>
-    [CreateAssetMenu(fileName = "Audio Manager File", menuName = "Carter Games/Audio Manager | CG/Audio Manager File")]
+    [CreateAssetMenu(fileName = "Audio Manager File", menuName = "Carter Games/Audio Manager/Audio Manager File")]
     public class AudioManagerFile : AudioManagerAsset
     {
         /// <summary>

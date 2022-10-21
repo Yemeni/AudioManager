@@ -9,6 +9,7 @@ namespace CarterGames.Assets.AudioManager
     /// <summary>
     /// The Music player, designed to play background music in your game.
     /// </summary>
+    [AddComponentMenu("Carter Games/Audio Manager/Music Player")]
     public class MusicPlayer : MonoBehaviour
     {
         /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
