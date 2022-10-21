@@ -292,7 +292,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d6187b6a670d3a41933dbe89612bff2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioManagerFile: {fileID: 11400000, guid: 66a1992615754914e85aa330acb3094f, type: 2}
+  audioManagerFile: {fileID: 0}
   mixer: {fileID: 0}
   clipsToPlay:
   - show: 0

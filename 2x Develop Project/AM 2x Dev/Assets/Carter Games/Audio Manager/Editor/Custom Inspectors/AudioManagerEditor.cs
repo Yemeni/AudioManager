@@ -349,6 +349,8 @@ namespace CarterGames.Assets.AudioManager.Editor
                     AssetDatabase.CreateAsset(CreateInstance(typeof(AudioManagerFile)), "Assets/Resources/Carter Games/Audio Manager/Audio Manager File.asset");
                     AssetDatabase.Refresh();
                     file.objectReferenceValue = (AudioManagerFile) AudioManagerEditorUtil.GetFile<AudioManagerFile>("t:audiomanagerfile");
+                    hasAmf = file.objectReferenceValue != null;
+                    Repaint();
                 }
 
                 GUI.backgroundColor = normalBackgroundColour;
