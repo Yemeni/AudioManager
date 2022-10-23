@@ -13,7 +13,7 @@ namespace CarterGames.Assets.AudioManager
         /// <summary>
         /// Used in the audio manager file editor script to move the tab around...
         /// </summary>
-        [SerializeField, HideInInspector] private int tabPos;     
+        [SerializeField, HideInInspector] private int tabPos = 0;     
         
         
         /// <summary>

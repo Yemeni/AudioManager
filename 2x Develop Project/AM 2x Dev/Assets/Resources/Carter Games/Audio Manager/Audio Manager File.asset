@@ -13,10 +13,8 @@ MonoBehaviour:
   m_Name: Audio Manager File
   m_EditorClassIdentifier: 
   tabPos: 0
-  audioMixer:
-  - {fileID: 0}
+  audioMixer: []
   soundPrefab: {fileID: 0}
   isPopulated: 0
-  directory:
-  - Assets/Carter Games
+  directory: []
   library: []

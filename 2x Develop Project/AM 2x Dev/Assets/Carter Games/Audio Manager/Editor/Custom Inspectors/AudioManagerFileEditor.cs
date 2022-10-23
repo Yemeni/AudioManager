@@ -13,8 +13,7 @@ namespace CarterGames.Assets.AudioManager.Editor
         |   Fields
         ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */ 
         
-        private readonly Color32 amRedCol = new Color32(255, 150, 157, 255);
-        private readonly string[] TabTitles = new string[2] {"Settings", "Library"};
+        private readonly string[] tabTitles = new string[2] {"Settings", "Library"};
         
         private SerializedProperty audioPrefab;
         private SerializedProperty isPopulated;
@@ -23,7 +22,6 @@ namespace CarterGames.Assets.AudioManager.Editor
         private SerializedProperty library;
         private SerializedProperty tabPos;
         
-        private Color defaultContentCol;
         private Color normalBackgroundCol;
         
         /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -64,7 +62,6 @@ namespace CarterGames.Assets.AudioManager.Editor
             directories = serializedObject.FindProperty("directory");
             library = serializedObject.FindProperty("library");
             tabPos = serializedObject.FindProperty("tabPos");
-            defaultContentCol = GUI.contentColor;
             normalBackgroundCol = GUI.backgroundColor;
         }
 
@@ -75,7 +72,7 @@ namespace CarterGames.Assets.AudioManager.Editor
         private void RenderTabBar()
         {
             GUILayout.Space(5f);
-            tabPos.intValue = GUILayout.Toolbar(tabPos.intValue, TabTitles);
+            tabPos.intValue = GUILayout.Toolbar(tabPos.intValue, tabTitles);
             GUILayout.Space(5f);
         }
 
@@ -148,7 +145,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             for (var i = 0; i < audioMixers.arraySize; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"#{(i+1).ToString()}", GUILayout.Width(AudioManagerEditorUtil.TextWidth($"#{(i+1).ToString()} ")));
+                EditorGUILayout.LabelField($"#{(i).ToString()}", GUILayout.Width(AudioManagerEditorUtil.TextWidth($"#{(i+1).ToString()} ")));
                 EditorGUILayout.PropertyField(audioMixers.GetArrayElementAtIndex(i), GUIContent.none);
 
                 GUI.backgroundColor = AudioManagerEditorUtil.Green;
@@ -180,12 +177,10 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.BeginVertical("HelpBox");
             GUILayout.Space(2.5f);
             
-            GUI.contentColor = amRedCol;
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Directories", EditorStyles.boldLabel, GUILayout.MaxWidth(120f));
             EditorGUILayout.EndHorizontal();
-            GUI.contentColor = defaultContentCol;
-            
+
             if (directories.arraySize.Equals(0))
             {
                 if (GUILayout.Button("Add First Element"))
@@ -260,32 +255,37 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.LabelField("Audio Library", EditorStyles.boldLabel, GUILayout.MaxWidth(120f));
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.HelpBox("Shows all the clips that are present in the library of this file.", MessageType.None);
-
-            GUILayout.Space(5f);
-            
-            if (library.arraySize.Equals(0)) return;
-            
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Clip Name", EditorStyles.boldLabel, GUILayout.Width(Screen.width / 2.25f));
-            EditorGUILayout.LabelField("Audio Clip File", EditorStyles.boldLabel);
-            EditorGUILayout.EndHorizontal();
-
-            GUI.enabled = false;
-            
-            for (var i = 0; i < library.arraySize; i++)
+            if (library.arraySize > 0)
             {
-                var _fileName = library.GetArrayElementAtIndex(i).FindPropertyRelative("key");
-                var _fileClip = library.GetArrayElementAtIndex(i).FindPropertyRelative("value");
-                
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.PropertyField(_fileName, GUIContent.none, GUILayout.Width(Screen.width / 2.25f));
-                
-                EditorGUILayout.PropertyField(_fileClip, GUIContent.none);
-                EditorGUILayout.EndHorizontal();
-            }
+                EditorGUILayout.HelpBox("Shows all the clips that are present in the library of this file.", MessageType.None);
+
+                GUILayout.Space(5f);
             
-            GUI.enabled = true;
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Clip Name", EditorStyles.boldLabel, GUILayout.Width(Screen.width / 2.25f));
+                EditorGUILayout.LabelField("Audio Clip File", EditorStyles.boldLabel);
+                EditorGUILayout.EndHorizontal();
+
+                GUI.enabled = false;
+
+                for (var i = 0; i < library.arraySize; i++)
+                {
+                    var _fileName = library.GetArrayElementAtIndex(i).FindPropertyRelative("key");
+                    var _fileClip = library.GetArrayElementAtIndex(i).FindPropertyRelative("value");
+
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.PropertyField(_fileName, GUIContent.none, GUILayout.Width(Screen.width / 2.25f));
+
+                    EditorGUILayout.PropertyField(_fileClip, GUIContent.none);
+                    EditorGUILayout.EndHorizontal();
+                }
+
+                GUI.enabled = true;
+            }
+            else
+            {
+                EditorGUILayout.HelpBox("No clips currently in this library.", MessageType.None);
+            }
             
             GUILayout.Space(2.5f);
             EditorGUILayout.EndVertical();

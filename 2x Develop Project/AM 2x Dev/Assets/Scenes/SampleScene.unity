@@ -292,96 +292,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d6187b6a670d3a41933dbe89612bff2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioManagerFile: {fileID: 0}
+  audioManagerFile: {fileID: 11400000, guid: 66a1992615754914e85aa330acb3094f, type: 2}
   mixer: {fileID: 0}
   clipsToPlay:
-  - show: 0
-    clipName: 
+  - show: 1
+    clipName: Click_01
     volume:
-      min: 0
-      max: 0
+      min: 0.75
+      max: 1
     pitch:
-      min: 0
-      max: 0
-    showOptional: 1
+      min: 0.5
+      max: 1.15
+    showOptional: 0
     fromTime: 0
     clipDelay: 0
-  - show: 0
-    clipName: 
+  - show: 1
+    clipName: Confirm
     volume:
-      min: 0
-      max: 0
+      min: 0.8
+      max: 1
     pitch:
-      min: 0
-      max: 0
+      min: 0.75
+      max: 1.25
     showOptional: 1
-    fromTime: 0
-    clipDelay: 0
-  - show: 0
-    clipName: 
-    volume:
-      min: 0
-      max: 0
-    pitch:
-      min: 0
-      max: 0
-    showOptional: 1
-    fromTime: 0
-    clipDelay: 0
-  - show: 0
-    clipName: 
-    volume:
-      min: 0
-      max: 0
-    pitch:
-      min: 0
-      max: 0
-    showOptional: 1
-    fromTime: 0
-    clipDelay: 0
-  - show: 0
-    clipName: 
-    volume:
-      min: 0
-      max: 0
-    pitch:
-      min: 0
-      max: 0
-    showOptional: 1
-    fromTime: 0
-    clipDelay: 0
-  - show: 0
-    clipName: 
-    volume:
-      min: 0
-      max: 0
-    pitch:
-      min: 0
-      max: 0
-    showOptional: 1
-    fromTime: 0
-    clipDelay: 0
-  - show: 0
-    clipName: 
-    volume:
-      min: 0
-      max: 0
-    pitch:
-      min: 0
-      max: 0
-    showOptional: 1
-    fromTime: 0
-    clipDelay: 0
-  - show: 0
-    clipName: 
-    volume:
-      min: 0
-      max: 0
-    pitch:
-      min: 0
-      max: 0
-    showOptional: 1
-    fromTime: 0
+    fromTime: 0.25
     clipDelay: 0
   scrollPos: {x: 0, y: 0}
 --- !u!4 &541170167
@@ -798,15 +732,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timeToStartFrom: 0
-  timeToLoopAt: 0
-  musicTrack: {fileID: 0}
+  timeToLoopAt: 275
+  musicTrack: {fileID: 8300000, guid: bc80d3d0cf42f754d9a017656ba878da, type: 3}
   mixer: {fileID: 0}
   shouldLoop: 1
   playOnAwake: 1
-  volume: 1
+  volume: 0.7
   pitch: 1
   transitionLength: 1
-  introTransition: 0
+  introTransition: 4
   showSource: 0
 --- !u!4 &1388086845
 Transform:
