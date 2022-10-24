@@ -1166,6 +1166,211 @@ namespace CarterGames.Assets.AudioManager
         
 
         /// <summary>
+        /// Play a sound at a particular position in your game.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="position">Vector3 | The position to play at.</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayAtLocation(string request, Vector3 position, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], volume, pitch);
+            source.transform.position = position;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+
+
+        /// <summary>
+        /// Play a sound at a particular position in your game.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="position">Vector3 | The position to play at.</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayAtLocation(string request, Vector3 position, AudioMixerGroup mixer, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source = SourceSetup(source, lib[request], volume, pitch);
+            source.transform.position = position;
+            source.outputAudioMixerGroup = mixer;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound at a particular position in your game.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="position">Vector3 | The position to play at.</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public void PlayAtLocation(string request, Vector3 position, int mixerID, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], volume, pitch);
+            source.transform.position = position;
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound at a particular position in your game.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="position">Vector3 | The position to play at.</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public void PlayAtLocation(string request, Vector3 position, Hashtable args)
+        {
+            if (!CanPlayAudio) return;
+            if (!HasClip(request)) return;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+            
+            source.clip = lib[request];
+            source.transform.position = position;
+            source = UpdateSourceWithArgs(source, args);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+        }
+        
+        
+        /// <summary>
+        /// Play a sound at a particular position in your game and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="position">Vector3 | The position to play at.</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public AudioSource PlayAtLocationAndGetSource(string request, Vector3 position, float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], volume, pitch);
+            source.transform.position = position;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound at a particular position in your game and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="position">Vector3 | The position to play at.</param>
+        /// <param name="mixer">AudioMixerGroup | The mixer group to use...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public AudioSource PlayAtLocationAndGetSource(string request, Vector3 position, AudioMixerGroup mixer,  float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], volume, pitch);
+            source.transform.position = position;
+            source.outputAudioMixerGroup = mixer;
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound at a particular position in your game and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="position">Vector3 | The position to play at.</param>
+        /// <param name="mixerID">Int | The mixer ID to use... Set in the Audio Manager Inspector...</param>
+        /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>
+        /// <param name="pitch">Float | The pitch that the sound is played at, default = 1</param>
+        public AudioSource PlayAtLocationAndGetSource(string request, Vector3 position, int mixerID,  float volume = 1f, float pitch = 1f)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source = SourceSetup(source, lib[request], volume, pitch);
+            source.transform.position = position;
+            source.outputAudioMixerGroup = audioManagerFile.audioMixer[mixerID];
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+            return source;
+        }
+        
+        
+        /// <summary>
+        /// Play a sound at a particular position in your game and returns the audio source for you to check / use as needed.
+        /// </summary>
+        /// <param name="request">String | The name of the audio clip you want to play (note it is case sensitive)</param>
+        /// <param name="position">Vector3 | The position to play at.</param>
+        /// <param name="args">Hashtable | Full custom options, e.g. of use: AudioManager.instance.AudioArgs("Volume", 1f, "Pitch", 1f);</param>
+        public AudioSource PlayAtLocationAndGetSource(string request, Vector3 position, Hashtable args)
+        {
+            if (!CanPlayAudio) return null;
+            if (!HasClip(request)) return null;
+
+            var clip = ClipSetup;
+            var source = clip.GetComponent<AudioSource>();
+            var audioRemoval = source.GetComponent<AudioClipPlayer>();
+
+            source.clip = lib[request];
+            source.transform.position = position;
+            source = UpdateSourceWithArgs(source, args);
+            source.Play();
+            
+            AddToAudioRemoval(audioRemoval, source);
+
+            return source;
+        }
+        
+        
+        /// <summary>
         /// Play a random sound that has been scanned by this manager...
         /// </summary>
         /// <param name="volume">Float | The volume that the clip will be played at, default = 1</param>

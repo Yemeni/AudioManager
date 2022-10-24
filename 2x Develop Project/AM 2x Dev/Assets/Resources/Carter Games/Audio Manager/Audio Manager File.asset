@@ -13,8 +13,15 @@ MonoBehaviour:
   m_Name: Audio Manager File
   m_EditorClassIdentifier: 
   tabPos: 0
-  audioMixer: []
-  soundPrefab: {fileID: 0}
-  isPopulated: 0
-  directory: []
-  library: []
+  audioMixer:
+  - {fileID: 0}
+  soundPrefab: {fileID: 322064603624763291, guid: 6051d75b0602b2d4e80762524c183b04, type: 3}
+  isPopulated: 1
+  directory:
+  - Assets/Carter Games
+  - Assets/Carter Games/Audio Manager/Demo/Audio
+  library:
+  - key: Cloistered Vinyl
+    value: {fileID: 8300000, guid: bc80d3d0cf42f754d9a017656ba878da, type: 3}
+  - key: Time Goes By
+    value: {fileID: 8300000, guid: 0f35d0da0c3232a498e0e585f3e77691, type: 3}

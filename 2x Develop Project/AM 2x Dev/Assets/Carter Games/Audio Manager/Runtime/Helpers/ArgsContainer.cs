@@ -5,7 +5,7 @@ namespace CarterGames.Assets.AudioManager
     /// <summary>
     /// A class to hold the audio args setup.
     /// </summary>
-    public static class AudioArgsContainer
+    public static class ArgsContainer
     {
         /// <summary>
         /// Passes through the arguments for the audio source.

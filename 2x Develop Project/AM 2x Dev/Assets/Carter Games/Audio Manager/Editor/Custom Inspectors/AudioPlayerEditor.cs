@@ -164,10 +164,12 @@ namespace CarterGames.Assets.AudioManager.Editor
             EditorGUILayout.LabelField("Audio Manager File:", GUILayout.MaxWidth(140f));
             file.objectReferenceValue = (AudioManagerFile) EditorGUILayout.ObjectField(file.objectReferenceValue, typeof(AudioManagerFile), false);
             EditorGUILayout.EndHorizontal();
+
+            if (file.objectReferenceValue == null) return;
             
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Audio Mixer:", GUILayout.MaxWidth(140f));
-            mixer.objectReferenceValue = (AudioMixerGroup) EditorGUILayout.ObjectField(mixer.objectReferenceValue, typeof(AudioMixerGroup), false);
+            mixer.objectReferenceValue = (AudioMixerGroup)EditorGUILayout.ObjectField(mixer.objectReferenceValue, typeof(AudioMixerGroup), false);
             EditorGUILayout.EndHorizontal();
         }
         
