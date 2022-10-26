@@ -85,7 +85,7 @@ namespace CarterGames.Assets.AudioManager.Editor
         /// </summary>
         /// <param name="define">The define to add.</param>
         /// <param name="buildTargets">The build targets.</param>
-        private static void AddScriptingDefine(string define, params BuildTarget[] buildTargets)
+        public static void AddScriptingDefine(string define, params BuildTarget[] buildTargets)
         {
             if (buildTargets == null) return;
 
