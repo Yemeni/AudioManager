@@ -20,6 +20,6 @@
         /// <summary>
         /// Defines if the asset shows any log messages.
         /// </summary>
-        public bool showDebugMessages;
+        public bool showDebugMessages = true;
     }
 }

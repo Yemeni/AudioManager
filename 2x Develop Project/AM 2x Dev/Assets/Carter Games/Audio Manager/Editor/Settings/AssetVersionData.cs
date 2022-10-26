@@ -14,6 +14,6 @@
         /// <summary>
         /// The date this release of the asset was submitted for release...
         /// </summary>
-        public static string ReleaseDate => "21/10/2022";
+        public static string ReleaseDate => "26/10/2022";
     }
 }

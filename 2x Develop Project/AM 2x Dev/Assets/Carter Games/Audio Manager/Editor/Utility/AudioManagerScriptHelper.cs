@@ -52,7 +52,6 @@ namespace CarterGames.Assets.AudioManager.Editor
             // Checks to see if there is anything in the path, if its empty it will not run the rest of the code and instead put a message in the console
             if (_allFiles.Count <= 0)
             {
-                Debug.Log("0");
                 return _amount;
             }
             
@@ -308,8 +307,6 @@ namespace CarterGames.Assets.AudioManager.Editor
                         continue;
                     }
 
-                    Debug.Log(_path);
-                    
                     source = (AudioClip)AssetDatabase.LoadAssetAtPath(_path, typeof(AudioClip));
                     audioList.Add(source);
                 }
