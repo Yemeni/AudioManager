@@ -18,8 +18,7 @@ MonoBehaviour:
   soundPrefab: {fileID: 322064603624763291, guid: 6051d75b0602b2d4e80762524c183b04, type: 3}
   isPopulated: 1
   directory:
-  - Assets/Carter Games
-  - Assets/Carter Games/Audio Manager/Demo/Audio
+  - Assets
   library:
   - key: Cloistered Vinyl
     value: {fileID: 8300000, guid: bc80d3d0cf42f754d9a017656ba878da, type: 3}

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,7 +32,13 @@ namespace CarterGames.Assets.AudioManager.Editor
                 return _settingsAssetObject;
             }
         }
+        
+        /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+        |   Events
+        ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
 
+        public static Action OnBaseDirectoryUpdated = delegate { };
+        
         /* ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
         |   Settings Provider
         ───────────────────────────────────────────────────────────────────────────────────────────────────────────── */
@@ -148,6 +155,7 @@ namespace CarterGames.Assets.AudioManager.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 SettingsAssetObject.ApplyModifiedProperties();
+                OnBaseDirectoryUpdated?.Invoke();
             }
 
             GUI.enabled = false;

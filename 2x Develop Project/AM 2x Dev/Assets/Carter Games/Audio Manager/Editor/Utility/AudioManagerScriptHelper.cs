@@ -396,5 +396,24 @@ namespace CarterGames.Assets.AudioManager.Editor
                 EditorGUILayout.Space();
             }
         }
+
+        
+        /// <summary>
+        /// Updates the directories in the audio manager file selected when the base directory is changed (removes any invalid directories from the base change).
+        /// </summary>
+        public static void OnBaseDirectoryChanged(SerializedProperty fileDir)
+        {
+            DirectorySelectHelper.RefreshAllDirectories();
+            var valid = DirectorySelectHelper.GetDirectoriesFromBase(true);
+            
+            for (var i = fileDir.arraySize - 1; i >= 0; i--)
+            {
+                if (valid.Contains(fileDir.GetArrayElementAtIndex(i).stringValue)) continue;
+                fileDir.DeleteArrayElementAtIndex(i);
+            }
+
+            fileDir.serializedObject.ApplyModifiedProperties();
+            fileDir.serializedObject.Update();
+        }
     }
 }

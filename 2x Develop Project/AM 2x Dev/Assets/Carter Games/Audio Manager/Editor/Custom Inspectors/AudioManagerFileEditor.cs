@@ -44,6 +44,8 @@ namespace CarterGames.Assets.AudioManager.Editor
 
             serializedObject.ApplyModifiedProperties();
             serializedObject.Update();
+            
+            base.OnInspectorGUI();
         }
         
         

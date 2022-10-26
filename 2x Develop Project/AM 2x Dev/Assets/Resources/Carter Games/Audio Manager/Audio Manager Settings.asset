@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 594a7dbd7de44f4aad57cac98423fb1c, type: 3}
   m_Name: Audio Manager Settings
   m_EditorClassIdentifier: 
-  baseAudioScanPath: Assets/Carter Games
+  baseAudioScanPath: Assets
   isUsingStatic: 0
-  showDebugMessages: 0
+  showDebugMessages: 1

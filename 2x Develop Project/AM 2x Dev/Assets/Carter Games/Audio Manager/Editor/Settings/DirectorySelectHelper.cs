@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using UnityEditor;
-using UnityEngine;
 
 namespace CarterGames.Assets.AudioManager.Editor
 {

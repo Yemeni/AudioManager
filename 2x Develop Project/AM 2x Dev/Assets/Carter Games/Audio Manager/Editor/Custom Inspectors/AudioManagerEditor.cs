@@ -57,9 +57,14 @@ namespace CarterGames.Assets.AudioManager.Editor
             ReferenceSetup();
             UpdateNormalEditorColours();
             hasAmf = AudioManagerEditorUtil.HasAnyAMF;
+
+            AudioManagerSettingsWindow.OnBaseDirectoryUpdated -= CallUpdateDirectories;
+            AudioManagerSettingsWindow.OnBaseDirectoryUpdated += CallUpdateDirectories;
+
+            CallUpdateDirectories();
         }
 
-        
+
         /// <summary>
         /// OnInspectorGUI | Overrides the default inspector of the Audio Manager Script with this custom one.
         /// </summary>
@@ -259,6 +264,13 @@ namespace CarterGames.Assets.AudioManager.Editor
             normalColour = GUI.color;
             normalBackgroundColour = GUI.backgroundColor;
             normalContentColour = GUI.contentColor;
+        }
+
+
+        private void CallUpdateDirectories()
+        {
+            AudioManagerScriptHelper.OnBaseDirectoryChanged(fileDirs);
+            Repaint();
         }
         
         
