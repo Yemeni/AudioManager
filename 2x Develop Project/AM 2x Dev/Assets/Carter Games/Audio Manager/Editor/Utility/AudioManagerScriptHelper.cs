@@ -336,24 +336,25 @@ namespace CarterGames.Assets.AudioManager.Editor
             if (!file.objectReferenceValue || fileDirs.arraySize <= 0) return;
             if (!fileIsPopulated.boolValue) return;
 
-            var errorString = string.Empty;
             
             if (fileLib.arraySize > 0 && fileLib.arraySize != lastTotal)
             {
                 EditorGUILayout.Space();
                 EditorGUILayout.BeginHorizontal();
-
+                
+                var _errorString = string.Empty;
+                
                 if (fileDirs.arraySize != 0)
                 {
-                    errorString = "No clips found in one of these directories, please check you have all directories spelt correctly:\n";
+                    _errorString = "No clips found in one of these directories, please check there is audio in the following directory:\n";
 
                     for (var i = 0; i < fileDirs.arraySize; i++)
-                        errorString = errorString + "assets" + AudioManagerEditorUtil.Settings.baseAudioScanPath + "/" + fileDirs.GetArrayElementAtIndex(i).stringValue + "\n";
+                        _errorString = _errorString + "assets" + AudioManagerEditorUtil.Settings.baseAudioScanPath + "/" + fileDirs.GetArrayElementAtIndex(i).stringValue + "\n";
                 }
                 else
-                    errorString = "No clips found in: " + "assets" + AudioManagerEditorUtil.Settings.baseAudioScanPath;
+                    _errorString = "No clips found in: " + "assets" + AudioManagerEditorUtil.Settings.baseAudioScanPath;
 
-                EditorGUILayout.HelpBox(errorString, MessageType.Info, true);
+                EditorGUILayout.HelpBox(_errorString, MessageType.Info, true);
                 EditorGUILayout.EndHorizontal();
             }
             else if (fileLib.arraySize != lastTotal)
@@ -365,7 +366,7 @@ namespace CarterGames.Assets.AudioManager.Editor
 
                 if (fileDirs.arraySize != 0)
                 {
-                    _errorString = "No clips found in one of these directories, please check you have all directories spelt correctly:\n";
+                    _errorString = "No clips found in one of these directories, please check there is audio in the following directory:\n";
 
                     for (var i = 0; i < fileDirs.arraySize; i++)
                         _errorString = _errorString + "assets/" + AudioManagerEditorUtil.Settings.baseAudioScanPath + "/" + fileDirs.GetArrayElementAtIndex(i).stringValue + "\n";
@@ -385,7 +386,7 @@ namespace CarterGames.Assets.AudioManager.Editor
 
                 if (fileDirs.arraySize != 0)
                 {
-                    _errorString =  "No clips found in one of these directories, please check you have all directories spelt correctly:\n";
+                    _errorString = "No clips found in one of these directories, please check there is audio in the following directory:\n";
 
                     for (var i = 0; i < fileDirs.arraySize; i++)
                         _errorString = _errorString + "assets/" + AudioManagerEditorUtil.Settings.baseAudioScanPath + "/" + fileDirs.GetArrayElementAtIndex(i) + "\n";

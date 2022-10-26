@@ -159,7 +159,7 @@ namespace CarterGames.Assets.AudioManager.Editor
                             AudioManagerScriptHelper.HelpLabels(file, fileDirs, fileLib, fileIsPopulated, lastTotal);
                     }
                     else
-                        EditorGUILayout.HelpBox("Cannot scan project. Either a directory you have entered has a typo or doesn't exist. Or you could have clips in your project from the base directory entered.", MessageType.Warning);
+                        EditorGUILayout.HelpBox("Cannot scan project due to the directories entered not containing any audio clips.", MessageType.Warning);
                 }
                 
                 EditorGUILayout.EndVertical();
